@@ -1,0 +1,1373 @@
+<meta charset="utf-8">
+<title>WageLens</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: slim sticky header, left step rail + one working pane; dense ledger tables; right-hand evidence drawer. */
+:root{
+  --bg:#f5f6f7; --surface:#ffffff; --surface-2:#eef1f2; --line:#e1e5e7; --line-strong:#c9cfd3;
+  --fg:#15191c; --fg-2:#4a5358; --fg-3:#7a848a;
+  --accent:#0d6b62; --accent-hover:#0a5850; --accent-fg:#ffffff; --accent-soft:#e1f0ed;
+  --ok:#1b7743; --ok-soft:#e2f2e8; --warn:#9a5a06; --warn-soft:#faefd9; --bad:#b0242d; --bad-soft:#fae5e6;
+  --mark:#ffe58a; --mark-fg:#1d1600;
+  --scrim:rgba(14,20,22,.36);
+  --shadow:0 1px 2px rgba(14,20,22,.05),0 12px 32px rgba(14,20,22,.10);
+  --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --r:8px; --r-sm:5px;
+  --t-fast:120ms; --t-med:220ms; --ease:cubic-bezier(.2,.7,.2,1);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0e1112; --surface:#15191b; --surface-2:#1b2023; --line:#252b2e; --line-strong:#343c40;
+  --fg:#e6eaeb; --fg-2:#a9b2b6; --fg-3:#7a858a;
+  --accent:#4dbdaf; --accent-hover:#68cdc0; --accent-fg:#04201c; --accent-soft:#12302c;
+  --ok:#55c487; --ok-soft:#122a1d; --warn:#e2a64d; --warn-soft:#2d2210; --bad:#f07780; --bad-soft:#331719;
+  --mark:#6b5410; --mark-fg:#fff6d6; --scrim:rgba(0,0,0,.55);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.45); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0e1112; --surface:#15191b; --surface-2:#1b2023; --line:#252b2e; --line-strong:#343c40;
+  --fg:#e6eaeb; --fg-2:#a9b2b6; --fg-3:#7a858a;
+  --accent:#4dbdaf; --accent-hover:#68cdc0; --accent-fg:#04201c; --accent-soft:#12302c;
+  --ok:#55c487; --ok-soft:#122a1d; --warn:#e2a64d; --warn-soft:#2d2210; --bad:#f07780; --bad-soft:#331719;
+  --mark:#6b5410; --mark-fg:#fff6d6; --scrim:rgba(0,0,0,.55);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px rgba(0,0,0,.45); color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:40;background:var(--surface)}
+button,input,select,textarea{font:inherit;color:inherit}
+.num,.tnum{font-variant-numeric:tabular-nums}
+.mono{font-family:var(--mono);font-size:12.5px}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+h1,h2,h3{margin:0;text-wrap:balance;font-weight:600;letter-spacing:-.01em}
+h1{font-size:20px} h2{font-size:15px} h3{font-size:13px}
+p{margin:0}
+.muted{color:var(--fg-2)} .faint{color:var(--fg-3)}
+.eyebrow{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--fg-3);font-weight:500}
+
+/* header */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--surface);border-bottom:1px solid var(--line);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+.top-in{display:flex;align-items:center;gap:14px;height:52px;min-width:0}
+.brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:15px;white-space:nowrap}
+.mark{width:22px;height:22px;border-radius:6px;background:var(--accent);display:grid;place-items:center}
+.mark svg{display:block}
+.brand small{font-weight:400;color:var(--fg-3);font-size:12px}
+.top .sep{width:1px;height:20px;background:var(--line)}
+.co{color:var(--fg-2);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.top-r{margin-left:auto;display:flex;gap:8px;align-items:center;min-width:0;flex-shrink:1}
+.top-r .pill{min-width:0;overflow:hidden;text-overflow:ellipsis}
+.pill{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 9px;border-radius:999px;border:1px solid var(--line);background:var(--surface-2);font-size:12px;color:var(--fg-2);white-space:nowrap}
+.pill .dot{width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.pill.syn{background:var(--warn-soft);border-color:transparent;color:var(--warn)}
+.pill.draft{background:var(--warn-soft);color:var(--warn);border-color:color-mix(in srgb,var(--warn) 35%,transparent);font-weight:600;letter-spacing:.04em}
+.pill.hyp{border-style:dashed}
+.rs-short{display:none}
+
+/* shell */
+.app{display:grid;grid-template-columns:216px minmax(0,1fr);gap:0;min-height:calc(100vh - 52px)}
+.rail{border-right:1px solid var(--line);background:var(--surface);padding:18px 12px;position:sticky;top:calc(52px + env(safe-area-inset-top,0px));align-self:start;height:calc(100vh - 52px - env(safe-area-inset-top,0px))}
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.step{display:grid;grid-template-columns:24px 1fr;gap:10px;align-items:start;width:100%;text-align:left;background:none;border:0;padding:9px 10px;border-radius:7px;cursor:pointer;color:var(--fg-2)}
+.step:hover{background:var(--surface-2)}
+.step[aria-current="step"]{background:var(--accent-soft);color:var(--fg)}
+.step .n{width:22px;height:22px;border-radius:50%;border:1px solid var(--line-strong);display:grid;place-items:center;font-size:11.5px;font-weight:600;background:var(--surface);font-variant-numeric:tabular-nums}
+.step[aria-current="step"] .n{border-color:var(--accent);color:var(--accent)}
+.step.done .n{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.step .l{font-weight:500;font-size:13.5px;color:inherit;display:block}
+.step .s{font-size:12px;color:var(--fg-3);display:block;margin-top:1px;font-variant-numeric:tabular-nums}
+.rail-foot{margin-top:22px;padding:12px 10px;border-top:1px solid var(--line);font-size:12px;color:var(--fg-3);display:grid;gap:6px}
+.rail-foot b{color:var(--fg-2);font-weight:500}
+main{min-width:0;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:22px 64px}
+.wrap{max-width:1180px;margin:0 auto;display:grid;gap:18px}
+.view[hidden]{display:none!important}
+.view{display:grid;gap:18px;min-width:0}
+.vhead{display:flex;gap:16px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+.vhead .t{display:grid;gap:4px;min-width:0;max-width:72ch}
+.vhead .acts{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* surfaces */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);min-width:0}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.card-b{padding:14px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;height:32px;padding:0 12px;border-radius:6px;border:1px solid var(--line-strong);background:var(--surface);color:var(--fg);font-weight:500;font-size:13px;cursor:pointer;white-space:nowrap;transition:background var(--t-fast) var(--ease),border-color var(--t-fast) var(--ease)}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn.primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn.ghost{border-color:transparent;background:transparent;color:var(--fg-2)}
+.btn.ghost:hover{background:var(--surface-2);color:var(--fg)}
+.btn.sm{height:26px;padding:0 9px;font-size:12px}
+.btn.ok{border-color:color-mix(in srgb,var(--ok) 40%,var(--line));color:var(--ok)}
+.btn[disabled]{opacity:.5;cursor:not-allowed}
+kbd{font-family:var(--mono);font-size:10.5px;padding:0 4px;border:1px solid var(--line-strong);border-bottom-width:2px;border-radius:4px;color:var(--fg-3);background:var(--surface);line-height:15px}
+.btn.primary kbd{background:transparent;color:inherit;border-color:color-mix(in srgb,var(--accent-fg) 40%,transparent);opacity:.85}
+
+/* chips */
+.chip{--c:var(--fg-3);display:inline-flex;align-items:center;height:21px;padding:0 7px;border-radius:4px;font-family:var(--mono);font-size:11.5px;font-weight:500;white-space:nowrap;
+  background:color-mix(in srgb,var(--c) 13%,transparent);color:color-mix(in srgb,var(--c) 72%,var(--fg));border:1px solid color-mix(in srgb,var(--c) 28%,transparent)}
+.code{display:inline-flex;align-items:center;gap:5px;height:21px;padding:0 6px;border-radius:4px;border:1px solid var(--line);background:var(--surface-2);font-family:var(--mono);font-size:11.5px;color:var(--fg-2);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
+.code .sys{color:var(--fg-3);font-size:10px;letter-spacing:.04em}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:500;height:20px;padding:0 7px;border-radius:999px;white-space:nowrap}
+.tag.ok{background:var(--ok-soft);color:var(--ok)} .tag.warn{background:var(--warn-soft);color:var(--warn)} .tag.bad{background:var(--bad-soft);color:var(--bad)} .tag.neutral{background:var(--surface-2);color:var(--fg-2)} .tag.acc{background:var(--accent-soft);color:var(--accent)}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;min-width:0}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--fg-3);font-weight:500;text-align:left;padding:8px 12px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface)}
+td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:0}
+td.r,th.r{text-align:right;font-variant-numeric:tabular-nums}
+tbody tr.click{cursor:pointer}
+tbody tr.click:hover td{background:var(--surface-2)}
+
+/* connect */
+.sys-card .card-b{display:grid;gap:12px}
+.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.kv div{display:grid;gap:2px}
+.kv b{font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
+.codes{display:flex;flex-wrap:wrap;gap:5px}
+.docs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.doc{display:grid;gap:6px;text-align:left;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);cursor:pointer;min-width:0}
+.doc:hover{border-color:var(--line-strong);background:var(--surface-2)}
+.doc .dt{font-weight:500;font-size:13px}
+.doc .dx{font-size:12px;color:var(--fg-3);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.flow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12.5px;color:var(--fg-2)}
+.flow .fs{display:flex;gap:7px;align-items:center}
+.flow .ar{color:var(--fg-3)}
+.plane{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);overflow:hidden}
+.plane > div{padding:14px;display:grid;gap:6px;align-content:start;border-right:1px solid var(--line)}
+.plane > div:last-child{border-right:0}
+.plane b{font-size:13px;font-weight:600}
+.plane p{font-size:12.5px;color:var(--fg-2)}
+
+/* agent */
+.counters{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.counters > div{padding:10px 14px;border-right:1px solid var(--line);display:grid;gap:2px;min-width:0}
+.counters > div:last-child{border-right:0}
+.counters b{font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.agent-grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:14px;align-items:start}
+.log{list-style:none;margin:0;padding:0;max-height:560px;overflow:auto}
+.log li{display:grid;grid-template-columns:52px minmax(0,1fr);gap:10px;padding:9px 14px;border-bottom:1px solid var(--line);animation:in var(--t-med) var(--ease)}
+.log li:last-child{border-bottom:0}
+.log .ts{font-family:var(--mono);font-size:11px;color:var(--fg-3);padding-top:2px;font-variant-numeric:tabular-nums}
+.log .row1{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.log .stepname{font-weight:600;font-size:12.5px}
+.log .tool{font-family:var(--mono);font-size:11px;padding:1px 6px;border-radius:4px;background:var(--surface-2);border:1px solid var(--line);color:var(--fg-2)}
+.log .meta{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--fg-3);white-space:nowrap}
+.log .io{font-size:12.5px;color:var(--fg-2);margin-top:3px;overflow-wrap:anywhere}
+.log .io.out{white-space:pre-line}
+.log .io .k{color:var(--fg-3);font-size:11px;text-transform:uppercase;letter-spacing:.05em;margin-right:4px}
+.log li.guard{background:color-mix(in srgb,var(--warn-soft) 55%,transparent)}
+.log li.guard.bad{background:color-mix(in srgb,var(--bad-soft) 55%,transparent)}
+.log li.live .ts::after{content:"";display:inline-block;width:6px;height:6px;margin-left:5px;border-radius:50%;background:var(--accent);animation:pulse 1s infinite}
+@keyframes in{from{opacity:.0;transform:translateY(3px)}to{opacity:1;transform:none}}
+@keyframes pulse{50%{opacity:.25}}
+.empty{display:grid;place-items:center;text-align:center;gap:8px;padding:34px 18px;color:var(--fg-2)}
+.empty b{color:var(--fg);font-size:14px}
+.res{list-style:none;margin:0;padding:0;max-height:430px;overflow:auto}
+.res li{display:grid;grid-template-columns:minmax(0,1fr) 18px minmax(0,.9fr);gap:8px;align-items:center;padding:8px 14px;border-bottom:1px solid var(--line)}
+.res li:last-child{border-bottom:0}
+.res .from{display:flex;flex-wrap:wrap;gap:4px;min-width:0}
+.res .to{display:grid;gap:2px;min-width:0}
+.res .to b{font-size:12.5px;font-weight:500}
+.res .to span{font-size:11px;color:var(--fg-3)}
+.res li.merged{background:color-mix(in srgb,var(--accent-soft) 55%,transparent)}
+.res li.rejected{background:color-mix(in srgb,var(--bad-soft) 50%,transparent)}
+.res li.unres{background:color-mix(in srgb,var(--warn-soft) 50%,transparent)}
+.res .arrow{color:var(--fg-3);text-align:center}
+.guards{display:grid;gap:8px}
+.guards .g{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:start;font-size:12.5px}
+
+/* live classify */
+.live-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px}
+.field{display:grid;gap:5px}
+.field label{font-size:12px;font-weight:500;color:var(--fg-2)}
+.input,select.input,textarea.input{width:100%;border:1px solid var(--line-strong);background:var(--surface);border-radius:6px;padding:7px 9px;font-size:13px;min-height:32px}
+textarea.input{resize:vertical;min-height:70px;line-height:1.4}
+.input:focus{outline:2px solid var(--accent);outline-offset:0;border-color:transparent}
+.note{display:flex;gap:9px;align-items:flex-start;padding:9px 11px;border-radius:6px;background:var(--surface-2);font-size:12.5px;color:var(--fg-2)}
+.note.warn{background:var(--warn-soft);color:var(--warn)}
+.note.bad{background:var(--bad-soft);color:var(--bad)}
+.note.ok{background:var(--ok-soft);color:var(--ok)}
+.proposal{display:grid;gap:10px;align-content:start}
+
+/* glossary */
+.gl-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--line)}
+.prog{display:flex;align-items:center;gap:10px;min-width:0}
+.prog .track{width:140px;height:6px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.prog .fill{height:100%;background:var(--accent);transition:width var(--t-med) var(--ease)}
+.gl-head,.gl-row{display:grid;grid-template-columns:6px minmax(0,1.6fr) minmax(0,1.1fr) 112px 128px 132px;gap:12px;align-items:center;padding:0 14px 0 0}
+.gl-head{font-size:11px;letter-spacing:.05em;text-transform:uppercase;color:var(--fg-3);font-weight:500;padding-block:8px;border-bottom:1px solid var(--line)}
+.gl-list{list-style:none;margin:0;padding:0}
+.gl-item{border-bottom:1px solid var(--line)}
+.gl-item:last-child{border-bottom:0}
+.gl-row{padding-block:10px;cursor:pointer;min-height:56px}
+.gl-row:hover{background:var(--surface-2)}
+.gl-item.sel > .gl-row{background:var(--accent-soft)}
+.gl-item.sel{box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--accent) 45%,transparent)}
+.stripe{align-self:stretch;margin-block:-10px;border-radius:0 2px 2px 0}
+.stripe.high{background:var(--bad)} .stripe.med{background:var(--warn)} .stripe.low{background:var(--line-strong)}
+.cname{display:grid;gap:4px;min-width:0}
+.cname b{font-weight:500;font-size:13.5px}
+.cname .aliases{display:flex;gap:4px;flex-wrap:wrap}
+.cat{display:grid;gap:3px;min-width:0;justify-items:start}
+.cat .cl{font-size:11.5px;color:var(--fg-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.conf{display:grid;gap:4px}
+.conf .bar{height:5px;border-radius:3px;background:var(--surface-2);overflow:hidden}
+.conf .bar i{display:block;height:100%;border-radius:3px}
+.conf span{font-size:12px;font-variant-numeric:tabular-nums;color:var(--fg-2)}
+.impact{display:grid;gap:3px;text-align:right;justify-items:end}
+.impact b{font-weight:500;font-variant-numeric:tabular-nums;font-size:13px}
+.impact span{font-size:11px;color:var(--fg-3);white-space:nowrap}
+.skel{display:inline-block;height:10px;width:70px;border-radius:3px;background:linear-gradient(90deg,var(--surface-2),var(--line),var(--surface-2));background-size:200% 100%;animation:sk 1.2s linear infinite}
+@keyframes sk{to{background-position:-200% 0}}
+.status{display:flex;justify-content:flex-end;gap:6px;align-items:center}
+.gl-detail{padding:4px 14px 16px 20px;display:grid;gap:14px;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}
+.ev{display:grid;gap:8px}
+.quote{display:grid;gap:6px;text-align:left;border:1px solid var(--line);border-left:3px solid var(--line-strong);border-radius:6px;padding:9px 11px;background:var(--surface);cursor:pointer;width:100%}
+.quote:hover{border-color:var(--line-strong);border-left-color:var(--accent)}
+.quote q{font-size:12.5px;color:var(--fg);quotes:"\201C" "\201D"}
+.quote .src{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:11.5px;color:var(--fg-3)}
+.side{display:grid;gap:10px;align-content:start}
+.rationale{font-size:12.5px;color:var(--fg-2);max-width:65ch}
+.ovr{display:grid;gap:10px;padding:12px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface-2)}
+.ovr .row{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.err{font-size:12px;color:var(--bad)}
+.kbdhint{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--fg-3)}
+.kbdhint span{display:inline-flex;gap:5px;align-items:center}
+
+/* results */
+.gate{display:grid;gap:12px;justify-items:start;padding:22px}
+.controls{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;padding:12px 14px}
+.slider{display:grid;gap:6px}
+.slider .top-row{display:flex;justify-content:space-between;gap:10px;font-size:12.5px;color:var(--fg-2)}
+.slider .top-row b{color:var(--fg);font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;accent-color:var(--accent)}
+.perf{display:flex;gap:16px;font-size:12.5px;color:var(--fg-2);font-variant-numeric:tabular-nums;white-space:nowrap}
+.perf b{color:var(--fg);font-weight:600}
+.kpi{padding:14px;display:grid;gap:4px;align-content:start}
+.kpi .v{font-size:24px;font-weight:600;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.15}
+.kpi .full{font-size:12px;color:var(--fg-3);font-variant-numeric:tabular-nums}
+.kpi .sub{font-size:12px;color:var(--fg-2)}
+.tenx{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:16px;align-items:center;padding:12px 14px}
+.tenx .big{font-size:22px;font-weight:600;color:var(--accent);font-variant-numeric:tabular-nums}
+.tenx p{font-size:12.5px;color:var(--fg-2)}
+.hbar{display:block;height:4px;border-radius:2px;background:var(--surface-2);width:100%;max-width:160px;overflow:hidden}
+.bd th,.bd td{padding-inline:10px}
+.grid2.bd{grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr)}
+.tbl-wrap > table{min-width:520px}
+.bd .tbl-wrap > table{min-width:420px}
+.tenx .tag{justify-self:start}
+.hbar i{display:block;height:100%;background:var(--accent);border-radius:3px}
+
+/* drawer */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:50;animation:fade var(--t-med) var(--ease)}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(720px,100%);background:var(--surface);border-left:1px solid var(--line);z-index:60;display:grid;grid-template-rows:auto minmax(0,1fr);box-shadow:var(--shadow);
+  padding-top:env(safe-area-inset-top,0px);padding-right:env(safe-area-inset-right,0px);padding-bottom:env(safe-area-inset-bottom,0px);animation:slide var(--t-med) var(--ease)}
+.dr-h{display:flex;gap:12px;align-items:flex-start;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--line)}
+.dr-h .t{display:grid;gap:4px;min-width:0}
+.dr-b{overflow:auto;padding:16px;display:grid;gap:16px;align-content:start}
+.doctext{white-space:pre-wrap;font-size:13px;line-height:1.6;color:var(--fg-2);max-width:68ch}
+mark{background:var(--mark);color:var(--mark-fg);border-radius:2px;padding:0 1px}
+@keyframes fade{from{opacity:0}}
+@keyframes slide{from{transform:translateX(24px);opacity:.4}}
+.trace td{font-size:12.5px}
+table.trace{table-layout:fixed;min-width:560px}
+table.trace th:nth-child(1){width:22%} table.trace th:nth-child(2){width:38%} table.trace th:nth-child(3){width:17%} table.trace th:nth-child(4){width:23%}
+.trace td.r{white-space:nowrap}
+.trace td.mono{overflow-wrap:anywhere}
+.trace .f{font-family:var(--mono);font-size:11.5px;color:var(--fg-2);overflow-wrap:anywhere}
+.trace .c{font-size:11.5px;color:var(--accent);min-width:150px}
+.trace tr.cls td{color:var(--fg-2)}
+details.mon > summary{cursor:pointer;list-style:none;border-bottom:1px solid var(--line)}
+details.mon:not([open]) > summary{border-bottom:0}
+details.mon > summary::-webkit-details-marker{display:none}
+details.mon > summary h3::before{content:"▸";display:inline-block;margin-right:6px;color:var(--fg-3);transition:transform var(--t-fast)}
+details.mon[open] > summary h3::before{transform:rotate(90deg)}
+.sumgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.sumgrid div{display:grid;gap:2px;padding:10px;border:1px solid var(--line);border-radius:6px}
+.sumgrid b{font-variant-numeric:tabular-nums;font-size:15px;font-weight:600}
+
+/* rules */
+.tabs{display:inline-flex;gap:2px;padding:3px;border-radius:7px;background:var(--surface-2);border:1px solid var(--line)}
+.tabs button{border:0;background:transparent;height:28px;padding:0 12px;border-radius:5px;cursor:pointer;color:var(--fg-2);font-weight:500;font-size:13px}
+.tabs button[aria-selected="true"]{background:var(--surface);color:var(--fg);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.timeline{list-style:none;margin:0;padding:0;display:grid;gap:0}
+.tl{display:grid;grid-template-columns:110px 20px minmax(0,1fr);gap:12px;align-items:start}
+.tl .date{font-family:var(--mono);font-size:12px;color:var(--fg-2);padding-top:14px;text-align:right;font-variant-numeric:tabular-nums}
+.tl .rail2{position:relative;align-self:stretch;display:flex;justify-content:center}
+.tl .rail2::before{content:"";position:absolute;top:0;bottom:0;width:2px;background:var(--line)}
+.tl:first-child .rail2::before{top:18px}
+.tl:last-child .rail2::before{bottom:calc(100% - 18px)}
+.tl .rail2 i{position:relative;margin-top:13px;width:12px;height:12px;border-radius:50%;background:var(--surface);border:2px solid var(--line-strong)}
+.tl.active .rail2 i{border-color:var(--accent);background:var(--accent)}
+.tl.hyp .rail2 i{border-style:dashed}
+.tl .body{border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:12px 14px;margin-bottom:12px;display:grid;gap:8px;min-width:0}
+.tl.active .body{border-color:color-mix(in srgb,var(--accent) 55%,var(--line))}
+.tl.hyp .body{border-style:dashed}
+.params{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--fg-2);font-variant-numeric:tabular-nums}
+.params b{color:var(--fg);font-weight:500}
+.stale .btn{white-space:normal;height:auto;min-height:32px;padding-block:6px}
+.stale{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px;border-radius:var(--r);border:1px solid color-mix(in srgb,var(--warn) 35%,var(--line));background:color-mix(in srgb,var(--warn-soft) 70%,var(--surface))}
+.switch{display:flex;gap:10px;align-items:flex-start;cursor:pointer}
+.switch input{appearance:none;width:34px;height:20px;border-radius:999px;background:var(--line-strong);position:relative;flex:none;cursor:pointer;margin:1px 0 0;transition:background var(--t-fast)}
+.switch input::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--surface);transition:transform var(--t-fast) var(--ease)}
+.switch input:checked{background:var(--accent)}
+.switch input:checked::after{transform:translateX(14px)}
+.diffsum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.diffsum div{display:grid;gap:2px;padding:10px 12px;border:1px solid var(--line);border-radius:6px;background:var(--surface)}
+.diffsum b{font-size:18px;font-weight:600;font-variant-numeric:tabular-nums}
+.pass{color:var(--ok);font-weight:600} .fail{color:var(--bad);font-weight:600}
+.breaks{margin:0;padding-left:18px;display:grid;gap:8px;font-size:13px;color:var(--fg-2);max-width:80ch}
+.breaks b{color:var(--fg);font-weight:500}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:9px 14px;border-radius:7px;font-size:13px;z-index:80;box-shadow:var(--shadow);max-width:calc(100% - 32px)}
+.spin{width:12px;height:12px;border-radius:50%;border:2px solid var(--line-strong);border-top-color:var(--accent);animation:rot .7s linear infinite;display:inline-block;vertical-align:-2px}
+@keyframes rot{to{transform:rotate(360deg)}}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+@media (max-width: 1080px){
+  .gl-head,.gl-row{grid-template-columns:6px minmax(0,1.5fr) minmax(0,1fr) 96px 110px 116px;gap:10px}
+  .docs{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media (max-width: 860px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  .rail{position:sticky;top:calc(52px + env(safe-area-inset-top,0px));z-index:20;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:6px max(16px,env(safe-area-inset-right,0px)) 6px max(16px,env(safe-area-inset-left,0px))}
+  .steps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px}
+  .step{grid-template-columns:1fr;justify-items:center;text-align:center;gap:3px;padding:6px 2px}
+  .step .s,.rail-foot{display:none}
+  .step .l{font-size:11.5px}
+  .step .l .long{display:none}
+  .agent-grid,.live-grid,.gl-detail,.grid2,.grid2.bd{grid-template-columns:minmax(0,1fr)}
+  .grid4{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .counters{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .counters > div:nth-child(3){border-right:0}
+  .counters > div:nth-child(n+4){border-top:1px solid var(--line)}
+  .plane{grid-template-columns:minmax(0,1fr)}
+  .plane > div{border-right:0;border-bottom:1px solid var(--line)}
+  .plane > div:last-child{border-bottom:0}
+  .co,.top .sep,.brand small{display:none}
+  .gl-head{display:none}
+  .gl-row{grid-template-columns:4px minmax(0,1fr) auto;grid-template-areas:"s n st" "s c c" "s f i";row-gap:8px}
+  .gl-row .stripe{grid-area:s} .gl-row .cname{grid-area:n} .gl-row .cat{grid-area:c;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px}
+  .gl-row .conf{grid-area:f} .gl-row .impact{grid-area:i} .gl-row .status{grid-area:st;align-self:start}
+  .gl-detail{padding-left:14px}
+  .tenx{grid-template-columns:minmax(0,1fr)}
+  .controls{grid-template-columns:minmax(0,1fr)}
+  .tl{grid-template-columns:16px minmax(0,1fr);gap:10px}
+  .tl .date{display:none}
+  .stale{grid-template-columns:minmax(0,1fr)}
+  .kbdhint{display:none}
+}
+@media (max-width: 520px){
+  .docs,.grid3,.kv,.sumgrid,.diffsum{grid-template-columns:minmax(0,1fr)}
+  .kv{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .kpi .v{font-size:20px}
+  .rs-long{display:none}
+  .rs-short{display:inline!important}
+  .vhead .acts{width:100%}
+  .vhead .acts .btn.primary{flex:1}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:1ms!important;animation-iteration-count:1!important;transition-duration:1ms!important}
+}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 14 14"><circle cx="6" cy="6" r="4.2" fill="none" stroke="var(--accent-fg)" stroke-width="1.8"/><path d="M9 9l3.4 3.4" stroke="var(--accent-fg)" stroke-width="1.8" stroke-linecap="round"/></svg></span>
+      WageLens <small>Labour Code wage audit</small>
+    </div>
+    <span class="sep" aria-hidden="true"></span>
+    <span class="co" id="hdr-co"></span>
+    <div class="top-r">
+      <span class="pill rs" id="hdr-rs" title="Active ruleset"><span class="dot"></span><span></span></span>
+      <span class="pill syn" title="Every employee, amount and policy text in this prototype is synthetic"><span class="rs-long">All data synthetic</span><span class="rs-short">Synthetic data</span></span>
+    </div>
+  </div>
+</header>
+
+<div class="app">
+  <nav class="rail" aria-label="Audit steps">
+    <ol class="steps" id="steps"></ol>
+    <div class="rail-foot">
+      <div><b>AI reads metadata, never rows.</b></div>
+      <div>The agent proposes one label per pay component. A person approves the glossary. A deterministic engine computes every employee-month.</div>
+    </div>
+  </nav>
+
+  <main id="main">
+    <div class="wrap">
+
+      <!-- 1 CONNECT -->
+      <section class="view" id="v-connect" aria-labelledby="h-connect">
+        <div class="vhead">
+          <div class="t">
+            <span class="eyebrow">Step 1 · Connect estate</span>
+            <h1 id="h-connect">Two payroll systems, one wage definition</h1>
+            <p class="muted">WageLens reads each system's pay-component dictionary and your policy documents. Salary rows stay where they are until the deterministic engine runs.</p>
+          </div>
+          <div class="acts"><button class="btn primary" id="btn-discover">Run discovery agent</button></div>
+        </div>
+        <div class="grid2" id="sys-cards"></div>
+        <div class="card">
+          <div class="card-h"><h2>Source documents</h2><span class="faint" id="doc-count" style="font-size:12px"></span></div>
+          <div class="card-b"><div class="docs" id="docs"></div></div>
+        </div>
+        <div class="plane" aria-label="How WageLens splits the work">
+          <div><span class="eyebrow">Probabilistic plane</span><b>Agent reads metadata</b><p>Component names, codes, descriptions and documents. About one model call per pay component.</p></div>
+          <div><span class="eyebrow">Human gate</span><b>Payroll head approves glossary</b><p>Every label carries a quote verified against the source text. Overrides need a reason.</p></div>
+          <div><span class="eyebrow">Deterministic plane</span><b>Engine computes every row</b><p>Each employee-month gets a trace with formula and clause. Re-runs cost nothing.</p></div>
+        </div>
+      </section>
+
+      <!-- 2 AGENT -->
+      <section class="view" id="v-agent" hidden aria-labelledby="h-agent">
+        <div class="vhead">
+          <div class="t">
+            <span class="eyebrow">Step 2 · Agent run</span>
+            <h1 id="h-agent">Discovery agent</h1>
+            <p class="muted">Profiles both dictionaries, merges duplicate components across systems, retrieves the law and policy, and proposes a clause for each component. Every output passes schema and quote checks before a person sees it.</p>
+          </div>
+          <div class="acts">
+            <button class="btn" id="btn-replay">Replay recorded run</button>
+            <button class="btn ghost" id="btn-skip">Skip to end</button>
+            <button class="btn primary" id="btn-to-gloss">Review glossary</button>
+          </div>
+        </div>
+        <div class="counters" aria-live="polite">
+          <div><span class="eyebrow">Steps</span><b id="c-steps">0</b></div>
+          <div><span class="eyebrow">Tool calls</span><b id="c-tools">0</b></div>
+          <div><span class="eyebrow">Tokens</span><b id="c-tok">0</b></div>
+          <div><span class="eyebrow">Model time</span><b id="c-ms">0 ms</b></div>
+          <div><span class="eyebrow">Cost (est.)</span><b id="c-cost">$0.000</b></div>
+        </div>
+        <div class="agent-grid">
+          <div class="card">
+            <div class="card-h"><h2>Run log</h2><span class="faint" style="font-size:12px" id="log-state">Recorded run</span></div>
+            <p class="faint" id="log-note" style="font-size:11.5px;padding:8px 14px 0"></p>
+            <ol class="log" id="log"></ol>
+          </div>
+          <div style="display:grid;gap:14px;min-width:0">
+            <div class="card">
+              <div class="card-h"><h2>Component resolution</h2><span class="faint" style="font-size:12px" id="res-sum"></span></div>
+              <div id="res"></div>
+            </div>
+            <div class="card">
+              <div class="card-h"><h2>Guardrail events</h2><span class="faint" style="font-size:12px" id="guard-sum"></span></div>
+              <div class="card-b"><div class="guards" id="guards"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="card" id="live">
+          <div class="card-h"><h2>Classify a new pay component live</h2><span id="live-state" class="faint" style="font-size:12px"></span></div>
+          <div class="card-b live-grid">
+            <form id="live-form" class="proposal" novalidate>
+              <div class="field"><label for="live-sys">Source system</label><select id="live-sys" class="input"></select></div>
+              <div class="field"><label for="live-name">Component name</label><input id="live-name" class="input" value="WFH Allowance" autocomplete="off"></div>
+              <div class="field"><label for="live-desc">Description from the pay dictionary</label><textarea id="live-desc" class="input">Flat Rs 2,000 a month paid to hybrid employees towards internet and home-office costs. Paid every month regardless of spend; no bills are collected.</textarea></div>
+              <div class="field"><label for="live-provider">AI provider</label><select id="live-provider" class="input">
+                <option value="openrouter">OpenRouter (your API key, any model)</option>
+                <option value="claude">Claude (when opened in claude.ai)</option>
+                <option value="recorded">Recorded run (no AI call)</option>
+              </select></div>
+              <div id="or-fields" style="display:grid;gap:10px">
+                <div class="field"><label for="or-key">OpenRouter API key</label><input id="or-key" class="input" type="password" placeholder="sk-or-..." autocomplete="off" spellcheck="false"><span class="faint" style="font-size:12px">Kept in this tab's memory only. Never stored or sent anywhere except openrouter.ai.</span></div>
+                <div class="field"><label for="or-model">Model</label><input id="or-model" class="input" value="meta-llama/llama-3.3-70b-instruct:free" autocomplete="off" spellcheck="false"></div>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+                <button class="btn primary" id="btn-live" type="submit">Classify with Claude</button>
+                <span class="faint" style="font-size:12px">Sends the name, description and the 6 source documents. No employee rows.</span>
+              </div>
+            </form>
+            <div id="live-out" aria-live="polite"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3 GLOSSARY -->
+      <section class="view" id="v-glossary" hidden aria-labelledby="h-gl">
+        <div class="vhead">
+          <div class="t">
+            <span class="eyebrow">Step 3 · Review glossary</span>
+            <h1 id="h-gl">Approve one label per component</h1>
+            <p class="muted">Sorted by risk: low confidence and large ₹ swing first. The ₹ figure is the change in annual PF plus gratuity liability if the label flipped, recomputed by the engine over the estate.</p>
+          </div>
+          <div class="acts">
+            <button class="btn" id="btn-bulk">Approve all ≥ 0.90</button>
+            <button class="btn primary" id="btn-to-results">Run engine</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="gl-bar">
+            <div class="prog"><span class="track"><span class="fill" id="gl-fill" style="width:0"></span></span><b class="tnum" id="gl-count"></b></div>
+            <span class="faint" id="gl-impact-state" style="font-size:12px"></span>
+            <div class="kbdhint" style="margin-left:auto"><span><kbd>j</kbd><kbd>k</kbd> move</span><span><kbd>a</kbd> approve</span><span><kbd>o</kbd> override</span><span><kbd>Esc</kbd> close</span></div>
+          </div>
+          <div class="gl-head" aria-hidden="true"><span></span><span>Component · aliases</span><span>Proposed label</span><span>Confidence</span><span style="text-align:right">₹ if flipped</span><span style="text-align:right">Status</span></div>
+          <ul class="gl-list" id="gl-list" role="listbox" aria-label="Canonical pay components" tabindex="0"></ul>
+        </div>
+      </section>
+
+      <!-- 4 RESULTS -->
+      <section class="view" id="v-results" hidden aria-labelledby="h-res">
+        <div class="vhead">
+          <div class="t">
+            <span class="eyebrow">Step 4 · Results</span>
+            <h1 id="h-res">Liability impact <span id="res-draft"></span></h1>
+            <p class="muted" id="res-sub">Deterministic engine over every employee-month in the estate.</p>
+          </div>
+          <div class="acts"><button class="btn" id="btn-csv" disabled>Download auditor CSV</button></div>
+        </div>
+        <div id="res-gate"></div>
+        <div id="res-body" style="display:grid;gap:14px"></div>
+      </section>
+
+      <!-- 5 RULES -->
+      <section class="view" id="v-rules" hidden aria-labelledby="h-rules">
+        <div class="vhead">
+          <div class="t">
+            <span class="eyebrow">Step 5 · Rules &amp; tests</span>
+            <h1 id="h-rules">Versioned rules, hand-checked tests</h1>
+            <p class="muted">Law changes are a ruleset version, not a code change. Switch versions and the engine shows exactly which employees move and by how much.</p>
+          </div>
+          <div class="acts">
+            <div class="tabs" role="tablist" aria-label="Rules and tests">
+              <button role="tab" id="tab-rules" aria-selected="true" aria-controls="pane-rules">Rule store</button>
+              <button role="tab" id="tab-tests" aria-selected="false" aria-controls="pane-tests">Tests</button>
+            </div>
+          </div>
+        </div>
+        <div id="pane-rules" role="tabpanel" aria-labelledby="tab-rules" style="display:grid;gap:14px"></div>
+        <div id="pane-tests" role="tabpanel" aria-labelledby="tab-tests" hidden style="display:grid;gap:14px"></div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" hidden role="dialog" aria-modal="true" aria-labelledby="dr-title">
+  <div class="dr-h">
+    <div class="t"><span class="eyebrow" id="dr-eyebrow"></span><h2 id="dr-title"></h2><div id="dr-sub" class="muted" style="font-size:12.5px"></div></div>
+    <button class="btn sm" id="dr-close" aria-label="Close panel">Close <kbd>Esc</kbd></button>
+  </div>
+  <div class="dr-b" id="dr-body"></div>
+</aside>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="data.js"></script>
+<script src="engine.js"></script>
+<script>
+(function(){
+"use strict";
+const D = window.WL_DATA, E = window.WL_ENGINE;
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const nf0 = new Intl.NumberFormat("en-IN", {maximumFractionDigits: 0});
+const nf2 = new Intl.NumberFormat("en-IN", {minimumFractionDigits: 2, maximumFractionDigits: 2});
+const num = n => (n == null || isNaN(n)) ? "—" : nf0.format(n);
+const sign = n => n < 0 ? "−" : "";
+const inr = n => (n == null || isNaN(n)) ? "—" : sign(n) + "₹" + nf0.format(Math.abs(Math.round(n)));
+const inr2 = n => (n == null || isNaN(n)) ? "—" : sign(n) + "₹" + nf2.format(Math.abs(n));
+const inrS = n => { if (n == null || isNaN(n)) return "—"; const a = Math.abs(n);
+  if (a >= 1e7) return sign(n) + "₹" + (a / 1e7).toFixed(2) + " cr";
+  if (a >= 1e5) return sign(n) + "₹" + (a / 1e5).toFixed(2) + " L";
+  return sign(n) + "₹" + nf0.format(Math.round(a)); };
+const plus = (n, f) => (n > 0 ? "+" : "") + f(n);
+const pct = x => (x == null || isNaN(x)) ? "—" : (x <= 1 ? x * 100 : x).toFixed(1) + "%";
+const CATS = E.CATEGORIES;
+const CAT_IDS = Object.keys(CATS);
+const canon = D.canonicalComponents;
+const canonById = Object.fromEntries(canon.map(c => [c.id, c]));
+const docById = Object.fromEntries(D.documents.map(d => [d.id, d]));
+const SEED = D.defaultSeed != null ? D.defaultSeed : 42;
+const REVIEWER = "You · Payroll head";
+
+function catChip(id){ const c = CATS[id] || {}; return `<span class="chip" style="--c:${esc(c.color || "#7a848a")}" title="${esc(c.label || id)}">${esc(id)}</span>`; }
+function catLabel(id){ return (CATS[id] || {}).label || id; }
+function catClause(id){ return (CATS[id] || {}).clause || ""; }
+function rawLabel(sys, code){ const r = D.rawComponents.find(x => x.system === sys && x.code === code); return r ? r.label : ""; }
+function codeChip(sys, code){ const l = rawLabel(sys, code); const show = l && l !== code ? code + " " + l : code; return `<span class="code" title="${esc(sys + " · " + code + (l ? " · " + l : ""))}"><span class="sys">${esc(sys)}</span>${esc(show)}</span>`; }
+function sysName(id){ const s = D.systems.find(x => x.id === id); return s ? s.name : id; }
+
+/* ---------- state ---------- */
+const S = {
+  view: "connect",
+  glossary: E.makeGlossary(canon, "proposed"),
+  gv: 0,
+  rsIndex: 0,
+  erpf: null,
+  n: D.defaultN || 1200,
+  emp: {},
+  runs: {},
+  draftOK: false,
+  impacts: {}, impactsDone: false, order: null,
+  sel: 0, editing: null,
+  agentPlayed: false, agentI: 0, agentTimer: null,
+  sample: undefined, downloads: null,
+  diff: null, rulesTab: "rules", tests: null, evalr: null,
+  lastRun: null
+};
+let toastTimer;
+function toast(msg){ const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toastTimer); toastTimer = setTimeout(() => t.hidden = true, 2600); }
+
+function baseRS(){ return E.RULESETS[S.rsIndex]; }
+const rsCache = {};
+function activeRS(){ const b = baseRS(); if (S.erpf === null || S.erpf === b.includeEmployerPFInRemuneration) return b;
+  const k = b.id + ":" + S.erpf; if (!rsCache[k]) rsCache[k] = E.withOverrides ? E.withOverrides(b, {includeEmployerPFInRemuneration: S.erpf}) : Object.assign({}, b, {includeEmployerPFInRemuneration: S.erpf});
+  return rsCache[k]; }
+function withErpf(rs, v){ if (rs.includeEmployerPFInRemuneration === v) return rs; const k = rs.id + ":" + v; if (!rsCache[k]) rsCache[k] = E.withOverrides ? E.withOverrides(rs, {includeEmployerPFInRemuneration: v}) : Object.assign({}, rs, {includeEmployerPFInRemuneration: v}); return rsCache[k]; }
+function rsKey(rs){ return rs.id + (rs.includeEmployerPFInRemuneration ? "" : ":erpf-out"); }
+function rsBaseId(rs){ return String(rs.id).split("+")[0]; }
+function rsShort(rs){ return rsBaseId(rs); }
+function employees(n){ if (!S.emp[n]) S.emp[n] = D.generateEmployees(SEED, n); return S.emp[n]; }
+function reviewed(){ return Object.values(S.glossary).filter(g => g.status !== "proposed").length; }
+function total(){ return Object.keys(S.glossary).length; }
+function allReviewed(){ return reviewed() === total(); }
+function engineGlossary(){ return {g: S.glossary, draft: !allReviewed()}; }
+
+function getRun(opts){
+  opts = opts || {};
+  const n = opts.n || S.n, rs = opts.rs || activeRS();
+  const eg = engineGlossary();
+  const key = [n, rsKey(rs), eg.draft ? "d" : "a", S.gv].join("|");
+  if (!S.runs[key]) {
+    const emps = employees(n);
+    const t0 = performance.now();
+    const run = E.runPortfolio(emps, eg.g, rs, canon);
+    const ms = run.ms != null ? run.ms : (performance.now() - t0);
+    S.runs[key] = {run, ms, draft: run.draft != null ? !!run.draft : eg.draft, rs, n, glossary: Object.assign({}, eg.g)};
+  }
+  return S.runs[key];
+}
+
+/* ---------- header + steps ---------- */
+const STEPS = [
+  {id: "connect", n: 1, l: "Connect", long: " estate"},
+  {id: "agent", n: 2, l: "Agent", long: " run"},
+  {id: "glossary", n: 3, l: "Review", long: " glossary"},
+  {id: "results", n: 4, l: "Results", long: ""},
+  {id: "rules", n: 5, l: "Rules", long: " & tests"}
+];
+function stepSub(id){
+  switch (id) {
+    case "connect": return D.systems.length + " systems · " + D.documents.length + " docs";
+    case "agent": return S.agentPlayed ? D.agentRun.length + " steps recorded" : S.agentTimer ? "Running" : "Not started";
+    case "glossary": return reviewed() + " of " + total() + " approved";
+    case "results": return S.lastRun ? (S.lastRun.draft ? "Draft run" : "Run complete") : (allReviewed() ? "Ready to run" : "Waiting on review");
+    case "rules": return E.RULESETS.length + " rule versions";
+  }
+}
+function stepDone(id){
+  return (id === "connect" && S.view !== "connect") || (id === "agent" && S.agentPlayed) || (id === "glossary" && allReviewed()) || (id === "results" && S.lastRun && !S.lastRun.draft);
+}
+function renderSteps(){
+  $("#steps").innerHTML = STEPS.map(s => `<li><button class="step${stepDone(s.id) ? " done" : ""}" data-go="${s.id}" ${S.view === s.id ? 'aria-current="step"' : ""}>
+    <span class="n">${stepDone(s.id) ? "✓" : s.n}</span><span><span class="l">${s.l}<span class="long">${esc(s.long)}</span></span><span class="s">${esc(stepSub(s.id))}</span></span></button></li>`).join("");
+}
+function renderHeader(){
+  $("#hdr-co").textContent = D.company.name;
+  const rs = activeRS();
+  const p = $("#hdr-rs");
+  p.classList.toggle("hyp", !!rs.hypothetical);
+  p.lastElementChild.innerHTML = `<span class="rs-long">${esc(rsShort(rs))}${rs.hypothetical ? " · hypothetical" : ""}${rs.includeEmployerPFInRemuneration ? "" : " · ER PF out"}</span><span class="rs-short">Rules ${esc(rs.version || "")}${rs.includeEmployerPFInRemuneration ? "" : "*"}</span>`;
+  p.title = "Active ruleset: " + (rs.label || rs.id);
+}
+
+/* ---------- routing ---------- */
+const VIEWS = STEPS.map(s => s.id);
+function go(v, push){
+  if (!VIEWS.includes(v)) v = "connect";
+  S.view = v;
+  for (const id of VIEWS) $("#v-" + id).hidden = id !== v;
+  if (push !== false && location.hash.slice(1) !== v) { try { history.replaceState(null, "", "#" + v); } catch (e) { location.hash = v; } }
+  renderSteps(); renderHeader();
+  if (v === "agent") { renderAgentStatic(); if (!S.agentPlayed && !S.agentTimer) { playAgent(); renderSteps(); } }
+  if (v === "glossary") renderGlossary();
+  if (v === "results") renderResults();
+  if (v === "rules") renderRules();
+  window.scrollTo(0, 0);
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-go]"); if (b) { e.preventDefault(); go(b.dataset.go); } });
+window.addEventListener("hashchange", () => { const h = location.hash.slice(1); if (h && h !== S.view) go(h, false); });
+
+/* ---------- drawer ---------- */
+let lastFocus = null;
+function openDrawer(o){
+  lastFocus = document.activeElement;
+  $("#dr-eyebrow").textContent = o.eyebrow || "";
+  $("#dr-title").textContent = o.title || "";
+  $("#dr-sub").innerHTML = o.sub || "";
+  $("#dr-body").innerHTML = o.html || "";
+  $("#dr-body").scrollTop = 0;
+  $("#drawer").hidden = false; $("#scrim").hidden = false;
+  $("#dr-close").focus();
+  if (o.onOpen) requestAnimationFrame(o.onOpen);
+}
+function closeDrawer(){ if ($("#drawer").hidden) return; $("#drawer").hidden = true; $("#scrim").hidden = true; if (lastFocus && lastFocus.focus) lastFocus.focus(); }
+$("#dr-close").onclick = closeDrawer; $("#scrim").onclick = closeDrawer;
+$("#drawer").addEventListener("keydown", e => {
+  if (e.key !== "Tab") return;
+  const f = $$("button,a[href],input,select,textarea,[tabindex]:not([tabindex='-1'])", $("#drawer")).filter(x => !x.disabled && x.offsetParent !== null);
+  if (!f.length) return; const first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});
+
+function verified(docId, quote){ try { return !!E.verifyQuote(D.documents, docId, quote); } catch (e) { console.error(e); return false; } }
+function openDoc(docId, quote){
+  const d = docById[docId];
+  if (!d) { toast("Document " + docId + " is not in the connected sources."); return; }
+  let body = esc(d.text), ok = null;
+  if (quote) {
+    const i = d.text.indexOf(quote); ok = i >= 0;
+    if (ok) body = esc(d.text.slice(0, i)) + '<mark id="hl">' + esc(quote) + "</mark>" + esc(d.text.slice(i + quote.length));
+  }
+  openDrawer({
+    eyebrow: (d.type || "document") + " · " + d.id, title: d.title,
+    sub: quote ? (ok ? '<span class="tag ok">✓ Quote verified in source</span> Highlighted below, exact substring match.' : '<span class="tag bad">Quote not found in source</span> The proposal cannot be approved on this evidence.') : esc((d.text || "").length.toLocaleString("en-IN") + " characters · read by the agent, never edited"),
+    html: `<div class="doctext">${body}</div>`,
+    onOpen: () => { const m = $("#hl"); if (m) m.scrollIntoView({block: "center"}); }
+  });
+}
+
+/* ---------- 1 connect ---------- */
+function renderConnect(){
+  const emps = employees(1200);
+  const stat = {};
+  for (const s of D.systems) stat[s.id] = {emps: new Set(), rows: 0, periods: new Set()};
+  for (const e of emps) for (const m of e.months || []) for (const l of m.lines || []) {
+    const st = stat[l.system] || (stat[l.system] = {emps: new Set(), rows: 0, periods: new Set()});
+    st.rows++; st.emps.add(e.id); st.periods.add(m.period);
+  }
+  $("#sys-cards").innerHTML = D.systems.map(s => {
+    const raws = D.rawComponents.filter(r => r.system === s.id); const st = stat[s.id];
+    return `<div class="card sys-card"><div class="card-h"><div style="display:grid;gap:2px;min-width:0"><h2>${esc(s.name)}</h2><span class="faint" style="font-size:12px">${esc(s.entity)}</span></div><span class="tag ok">● Connected</span></div>
+      <div class="card-b">
+        <div class="kv"><div><span class="eyebrow">Pay codes</span><b>${raws.length}</b></div><div><span class="eyebrow">Employees</span><b>${num(st.emps.size)}</b></div><div><span class="eyebrow">Pay lines</span><b>${num(st.rows)}</b></div></div>
+        <div class="faint" style="font-size:12px">Format: ${esc(s.format)} · ${st.periods.size} periods (${[...st.periods].sort().join(", ")})</div>
+        <div class="codes">${raws.map(r => `<span class="code" title="${esc(r.description || "")}">${esc(r.code)}${r.label && r.label !== r.code ? " · " + esc(r.label) : ""}</span>`).join("")}</div>
+      </div></div>`;
+  }).join("");
+  $("#doc-count").textContent = D.documents.length + " documents · click to read";
+  $("#docs").innerHTML = D.documents.map(d => `<button class="doc" data-doc="${esc(d.id)}"><span class="tag ${d.type === "law" ? "acc" : d.type === "policy" ? "neutral" : "warn"}" style="justify-self:start">${esc(d.type)}</span><span class="dt">${esc(d.title)}</span><span class="dx">${esc((d.text || "").slice(0, 160))}</span></button>`).join("");
+}
+document.addEventListener("click", e => { const b = e.target.closest("[data-doc]"); if (b) openDoc(b.dataset.doc, b.dataset.quote || null); });
+$("#btn-discover").onclick = () => { S.agentPlayed = false; go("agent"); };
+
+/* ---------- 2 agent ---------- */
+const RUN = D.agentRun || [];
+function isGuard(s){ return !!(s.guardrail || (s.status && s.status !== "ok") || /validate|verify|escalat/i.test(s.step)); }
+function guardLevel(s){ if (s.status === "rejected") return "bad"; if (s.status === "retry" || s.status === "escalated") return "warn"; return "ok"; }
+function guardWord(s){ return s.status === "rejected" ? "Blocked" : s.status === "retry" ? "Retried" : s.status === "escalated" ? "To human" : "Passed"; }
+const GUARD_NAME = {merge_rejected: "merge rejected", quote_not_found: "quote not found", invalid_category: "invalid category", low_confidence: "low confidence", retry: "retry"};
+function short(x, n){ x = typeof x === "string" ? x : JSON.stringify(x); if (x == null) return ""; return x.length > n ? x.slice(0, n - 1) + "…" : x; }
+function logItem(s, live){
+  const g = isGuard(s), lvl = g ? guardLevel(s) : "";
+  return `<li class="${g ? "guard " + lvl : ""}${live ? " live" : ""}"><span class="ts">${(+s.t || 0).toFixed(1)}s</span><div style="min-width:0">
+    <div class="row1"><span class="stepname">${esc(s.step)}</span>${s.tool ? `<span class="tool">${esc(s.tool)}</span>` : ""}${g ? `<span class="tag ${lvl}">${esc(GUARD_NAME[s.guardrail] || s.guardrail || guardWord(s).toLowerCase())}</span>` : ""}<span class="meta">${s.tokens ? num(s.tokens) + " tok · " : ""}${num(s.ms || 0)} ms</span></div>
+    ${s.input ? `<div class="io"><span class="k">in</span>${esc(short(s.input, 220))}</div>` : ""}
+    ${s.output ? `<div class="io out"><span class="k">out</span>${esc(short(s.output, 300))}</div>` : ""}
+  </div></li>`;
+}
+function setCounters(k){
+  const done = RUN.slice(0, k);
+  const tok = done.reduce((a, s) => a + (s.tokens || 0), 0), ms = done.reduce((a, s) => a + (s.ms || 0), 0);
+  $("#c-steps").textContent = k + " / " + RUN.length;
+  $("#c-tools").textContent = done.filter(s => s.tool).length;
+  $("#c-tok").textContent = num(tok);
+  $("#c-ms").textContent = ms >= 10000 ? (ms / 1000).toFixed(1) + " s" : num(ms) + " ms";
+  $("#c-cost").textContent = "$" + done.reduce((a, s) => a + (s.cost || 0), 0).toFixed(3);
+}
+function renderGuards(k){
+  const gs = RUN.slice(0, k).filter(isGuard);
+  $("#guard-sum").textContent = gs.length ? gs.length + " events" : "";
+  $("#guards").innerHTML = gs.length ? gs.map(s => { const l = guardLevel(s); return `<div class="g"><span class="tag ${l}">${guardWord(s)}</span><div><b style="font-weight:500">${esc(s.step)}</b>${s.tool ? ` <span class="faint mono">${esc(s.tool)}</span>` : ""}<div class="muted">${esc(short(s.output || s.input || "", 200))}</div></div></div>`; }).join("")
+    : `<div class="faint" style="font-size:12.5px">Schema checks, quote verification and confidence routing appear here as the run reaches them.</div>`;
+}
+function findRejected(){
+  const out = [];
+  const add = r => { if (r) out.push(r); };
+  (D.rejectedMerges || []).forEach(add);
+  for (const c of canon) { const r = c.resolution || {}; (r.rejected || r.rejectedMerges || []).forEach(x => add(Object.assign({target: c.id}, x))); if (r.rejectedMerge) add(Object.assign({target: c.id}, r.rejectedMerge)); }
+  return out;
+}
+function renderResolution(show){
+  if (!show) { $("#res").innerHTML = `<div class="empty"><span class="spin"></span><span>Waiting for <span class="mono">resolve_components</span></span></div>`; $("#res-sum").textContent = ""; return; }
+  const merged = canon.filter(c => new Set((c.aliases || []).map(a => a.system)).size > 1);
+  const single = canon.filter(c => new Set((c.aliases || []).map(a => a.system)).size <= 1);
+  const unresolved = D.rawComponents.filter(r => { try { return E.resolve(r.system, r.code, canon) == null; } catch (e) { return false; } });
+  const rej = findRejected();
+  $("#res-sum").textContent = D.rawComponents.length + " raw codes → " + canon.length + " components · " + merged.length + " merges";
+  const row = (c, cls) => `<li class="${cls}"><div class="from">${(c.aliases || []).map(a => codeChip(a.system, a.code)).join("")}</div><span class="arrow" aria-hidden="true">→</span>
+    <div class="to"><b>${esc(c.name)}</b><span>${cls === "merged" ? "merged · " : ""}${esc((c.resolution || {}).method || "exact code")}${(c.resolution || {}).confidence != null ? " · " + (+c.resolution.confidence).toFixed(2) : ""}${(c.resolution || {}).needsReview ? " · needs review" : ""}</span></div></li>`;
+  $("#res").innerHTML = `<ul class="res">${rej.map(r => `<li class="rejected"><div class="from">${r.a ? codeChip(r.a.system, r.a.code) : ""}${r.b ? codeChip(r.b.system, r.b.code) : ""}${!r.a && r.from ? esc(typeof r.from === "string" ? r.from : JSON.stringify(r.from)) : ""}</div><span class="arrow" aria-hidden="true">✕</span><div class="to"><b>Merge rejected</b><span>${esc(r.reason || r.note || "")}</span></div></li>`).join("")}
+    ${merged.map(c => row(c, "merged")).join("")}
+    ${unresolved.map(r => `<li class="unres"><div class="from">${codeChip(r.system, r.code)}</div><span class="arrow" aria-hidden="true">?</span><div class="to"><b>Unmapped</b><span>Sent to the human queue</span></div></li>`).join("")}
+    ${single.map(c => row(c, "")).join("")}</ul>`;
+}
+function resolutionShownAt(k){ const i = RUN.findIndex(s => /resolve/i.test(s.step + (s.tool || ""))); return i < 0 ? k > 0 : k > i; }
+function renderAgentStatic(){
+  const k = S.agentI;
+  const m = D.agentMeta || {}; $("#log-note").textContent = (m.note || "") + (m.pricePerMTokIn ? " Cost assumes $" + m.pricePerMTokIn + " / $" + m.pricePerMTokOut + " per million input / output tokens." : "");
+  $("#log").innerHTML = k ? RUN.slice(0, k).map((s, i) => logItem(s, i === k - 1 && !!S.agentTimer)).join("") : `<li style="display:block"><div class="empty"><b>No run yet</b><span>Replay the recorded agent run to see each tool call.</span></div></li>`;
+  setCounters(k); renderGuards(k); renderResolution(resolutionShownAt(k));
+  $("#log-state").textContent = S.agentTimer ? "Replaying…" : (k === RUN.length ? "Recorded run · complete" : "Recorded run");
+}
+function playAgent(){
+  clearTimeout(S.agentTimer); S.agentTimer = null; S.agentI = 0;
+  const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  if (reduce || !RUN.length) { finishAgent(); return; }
+  const lastT = +RUN[RUN.length - 1].t || RUN.length;
+  const scale = Math.min(0.6, 7.5 / Math.max(lastT, 1));
+  const tick = () => {
+    S.agentI++;
+    const k = S.agentI, log = $("#log");
+    if (k === 1) log.innerHTML = "";
+    const prev = log.lastElementChild; if (prev) prev.classList.remove("live");
+    log.insertAdjacentHTML("beforeend", logItem(RUN[k - 1], k < RUN.length));
+    log.scrollTop = log.scrollHeight;
+    setCounters(k); renderGuards(k); if (resolutionShownAt(k) !== resolutionShownAt(k - 1) || k === 1) renderResolution(resolutionShownAt(k));
+    if (k >= RUN.length) { finishAgent(); return; }
+    const dt = ((+RUN[k].t || 0) - (+RUN[k - 1].t || 0)) * scale * 1000;
+    S.agentTimer = setTimeout(tick, Math.max(140, Math.min(900, dt)));
+  };
+  $("#log-state").textContent = "Replaying…";
+  S.agentTimer = setTimeout(tick, 200);
+  renderSteps();
+}
+function finishAgent(){ clearTimeout(S.agentTimer); S.agentTimer = null; S.agentI = RUN.length; S.agentPlayed = true; renderAgentStatic(); renderSteps(); const log = $("#log"); log.scrollTop = log.scrollHeight; }
+$("#btn-replay").onclick = playAgent;
+$("#btn-skip").onclick = finishAgent;
+$("#btn-to-gloss").onclick = () => { if (S.agentTimer) finishAgent(); go("glossary"); };
+
+/* ---------- live classify ---------- */
+let providerTouched = false;
+function liveProvider(){ return $("#live-provider").value; }
+function liveNote(){
+  const st = $("#live-state"), btn = $("#btn-live"), sel = $("#live-provider");
+  if (S.sample === undefined) { st.innerHTML = '<span class="spin"></span> Checking for live AI'; btn.disabled = true; return; }
+  btn.disabled = false;
+  const claudeOpt = sel.querySelector('option[value="claude"]');
+  claudeOpt.disabled = !S.sample;
+  claudeOpt.textContent = S.sample ? "Claude (live in claude.ai)" : "Claude (only when opened in claude.ai)";
+  if (!providerTouched) sel.value = S.sample ? "claude" : "openrouter";
+  if (sel.value === "claude" && !S.sample) sel.value = "openrouter";
+  const prov = sel.value;
+  $("#or-fields").style.display = prov === "openrouter" ? "grid" : "none";
+  if (prov === "claude") { st.textContent = "Live AI: Claude"; btn.textContent = "Classify with Claude"; }
+  else if (prov === "openrouter") { st.textContent = "Live AI: OpenRouter"; btn.textContent = "Classify with OpenRouter"; }
+  else { st.textContent = "Recorded run"; btn.textContent = "Show recorded result"; }
+}
+$("#live-provider").addEventListener("change", () => { providerTouched = true; liveNote(); });
+function parseJSONReply(text){
+  let t = String(text || "").trim();
+  t = t.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "").trim();
+  const a = t.indexOf("{"), b = t.lastIndexOf("}");
+  if (a >= 0 && b > a) t = t.slice(a, b + 1);
+  try { return JSON.parse(t); } catch (e) { const err = new Error("invalid_json"); err.code = "invalid_json"; throw err; }
+}
+async function openRouterClassify(prompt, signal){
+  const key = $("#or-key").value.trim(), model = $("#or-model").value.trim() || "meta-llama/llama-3.3-70b-instruct:free";
+  if (!key) { const e = new Error("no key"); e.code = "no_key"; throw e; }
+  let res;
+  try {
+    res = await fetch("https://openrouter.ai/api/v1/chat/completions", {method: "POST", signal,
+      headers: {"Authorization": "Bearer " + key, "Content-Type": "application/json", "X-Title": "WageLens prototype"},
+      body: JSON.stringify({model, temperature: 0, messages: [
+        {role: "system", content: "You are a careful Indian payroll-law classifier. Reply with a single JSON object only."},
+        {role: "user", content: prompt}]})});
+  } catch (e) { if (e && e.name === "AbortError") { e.code = "cancelled"; throw e; } const err = new Error("network"); err.code = "network"; throw err; }
+  if (!res.ok) { const err = new Error("http " + res.status); err.code = res.status === 401 ? "bad_key" : res.status === 429 ? "rate_limited" : res.status === 402 ? "no_credit" : "http_" + res.status; throw err; }
+  const j = await res.json();
+  const content = j && j.choices && j.choices[0] && j.choices[0].message ? j.choices[0].message.content : "";
+  return {proposal: parseJSONReply(content), model: j.model || model};
+}
+function buildPrompt(sys, name, desc){
+  const cats = CAT_IDS.map(id => `- ${id}: ${CATS[id].label}${CATS[id].clause ? " (" + CATS[id].clause + ")" : ""}`).join("\n");
+  const docs = D.documents.map(d => `[${d.id}] ${d.title}\n"""\n${d.text}\n"""`).join("\n\n");
+  return `You classify ONE payroll pay component under India's Code on Wages 2019, section 2(y) (definition of "wages"), for a statutory audit.
+
+Choose exactly one category from this closed list. Any other value is rejected.
+${cats}
+
+Evidence rules:
+- Give 1 to 3 evidence items. Each "quote" must be copied character-for-character from the text of the named document below (a contiguous substring, 8 to 40 words). Do not paraphrase, trim inside, or fix typos. Quotes are machine-checked; a quote that is not an exact substring rejects the whole answer.
+- "docId" must be one of: ${D.documents.map(d => d.id).join(", ")}.
+- If the component is a reimbursement of actual expenses against bills, use OUTSIDE. Something paid regardless of spend is remuneration.
+- If the case is genuinely ambiguous, keep the best category and lower the confidence below 0.75 so a person reviews it.
+
+Reply with only this JSON object, no prose:
+{"category":"<ID>","confidence":0.0,"rationale":"<at most 45 words>","evidence":[{"docId":"<DOC_ID>","quote":"<exact substring>"}]}
+
+Source documents:
+${docs}
+
+Pay component to classify:
+System: ${sys} (${sysName(sys)})
+Name: ${name}
+Description: ${desc}`;
+}
+function renderProposal(p, v, label){
+  const ok = v && v.ok;
+  const ev = (p && Array.isArray(p.evidence)) ? p.evidence : [];
+  return `<div class="proposal">
+    <div class="note ${ok ? "ok" : "bad"}"><span>${ok ? "✓ Passed validation: closed-set category, evidence present, every quote found verbatim in its source." : "✕ Rejected by validation. This proposal would not reach the glossary."}</span></div>
+    ${!ok && v && v.errors && v.errors.length ? `<ul class="err" style="margin:0;padding-left:18px">${v.errors.map(e => `<li>${esc(typeof e === "string" ? e : JSON.stringify(e))}</li>`).join("")}</ul>` : ""}
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">${p && p.category ? catChip(p.category) : ""}<span class="muted" style="font-size:12.5px">${esc(p && CATS[p.category] ? catLabel(p.category) + " · " + catClause(p.category) : "")}</span>${p && p.confidence != null ? `<span class="tag neutral tnum">confidence ${(+p.confidence).toFixed(2)}</span>` : ""}${label ? `<span class="tag warn">${esc(label)}</span>` : ""}</div>
+    ${p && p.rationale ? `<p class="rationale">${esc(p.rationale)}</p>` : ""}
+    <div class="ev">${ev.map(q => quoteBtn(q)).join("")}</div>
+  </div>`;
+}
+function quoteBtn(q){
+  const ok = verified(q.docId, q.quote); const d = docById[q.docId];
+  return `<button type="button" class="quote" data-doc="${esc(q.docId)}" data-quote="${esc(q.quote)}"><q>${esc(q.quote)}</q><span class="src">${ok ? '<span class="tag ok">✓ verified in source</span>' : '<span class="tag bad">✕ not found in source</span>'}<span>${esc(d ? d.title : q.docId)}</span><span aria-hidden="true">· open</span></span></button>`;
+}
+function recordedExample(){
+  const c = canon.find(x => /night/i.test(x.id)) || canon.find(x => x.proposed && x.proposed.confidence < 0.8) || canon[0];
+  return c;
+}
+let liveCtl = null;
+$("#live-form").addEventListener("submit", async e => {
+  e.preventDefault();
+  const out = $("#live-out"), btn = $("#btn-live");
+  const name = $("#live-name").value.trim(), desc = $("#live-desc").value.trim(), sys = $("#live-sys").value;
+  if (!name) { out.innerHTML = `<div class="note bad">Enter a component name to classify.</div>`; $("#live-name").focus(); return; }
+  const prov = liveProvider();
+  if (prov === "recorded" || (prov === "claude" && !S.sample)) {
+    const c = recordedExample(); const p = c.proposed;
+    let v; try { v = E.validateProposal(p, D.documents); } catch (err) { console.error(err); v = {ok: false, errors: [String(err)]}; }
+    out.innerHTML = `<div class="note" style="margin-bottom:10px"><span>No AI call made. Showing the recorded run for <b>${esc(c.name)}</b> (${(c.aliases || []).map(a => esc(a.code)).join(", ")}). Pick OpenRouter with your key, or open the page in claude.ai, to classify live.</span></div>` + renderProposal(p, v, "recorded");
+    return;
+  }
+  btn.disabled = true; const prevText = btn.textContent; btn.innerHTML = '<span class="spin"></span> Classifying';
+  out.innerHTML = prov === "claude" ? `<div class="note"><span class="spin"></span> Waiting for Claude. The first call asks you to allow it.</div>` : `<div class="note"><span class="spin"></span> Waiting for ${esc($("#or-model").value.trim())} on OpenRouter. Free models can take 10–30 s.</div>`;
+  liveCtl = new AbortController();
+  try {
+    let p, tag = "live";
+    if (prov === "claude") p = await S.sample.json(buildPrompt(sys, name, desc), {signal: liveCtl.signal});
+    else { const r = await openRouterClassify(buildPrompt(sys, name, desc), liveCtl.signal); p = r.proposal; tag = "live · " + r.model; }
+    let v; try { v = E.validateProposal(p, D.documents); } catch (err) { console.error(err); v = {ok: false, errors: [String(err)]}; }
+    out.innerHTML = renderProposal(p, v, tag);
+  } catch (err) {
+    const code = err && err.code;
+    const msg = {not_granted: "Live AI was not allowed for this view, so nothing was sent. Showing the recorded run instead.",
+      rate_limited: "Too many requests right now (free models are rate-limited). Showing the recorded run; try again in a minute.",
+      invalid_json: "The model's reply was not valid JSON, so the guardrail rejected it. Nothing reaches the glossary. Try again or try another model.",
+      no_key: "Paste an OpenRouter API key first (free at openrouter.ai). It stays in this tab's memory only.",
+      bad_key: "OpenRouter rejected the key (401). Check it and try again.",
+      no_credit: "OpenRouter says this model needs credits (402). Pick a model ending in :free.",
+      network: "Could not reach openrouter.ai (network or browser blocked the request). Showing the recorded run.",
+      cancelled: "Stopped."}[code] || "The live call did not complete (" + esc(code || "error") + "). Showing the recorded run.";
+    const c = recordedExample();
+    let v; try { v = E.validateProposal(c.proposed, D.documents); } catch (e2) { v = {ok: false, errors: []}; }
+    out.innerHTML = `<div class="note warn" style="margin-bottom:10px"><span>${msg}</span></div>` + (["invalid_json", "cancelled", "no_key", "bad_key", "no_credit"].includes(code) ? "" : renderProposal(c.proposed, v, "recorded"));
+  } finally { btn.disabled = false; btn.textContent = prevText; }
+});
+
+/* ---------- 3 glossary ---------- */
+const ALT = {flexible_allowance: "EXCL_D", gratuity_payout: "EXCL_K", notice_pay_exgratia: "WAGE_OTHER", basic: "WAGE_OTHER", da: "WAGE_OTHER"};
+function altCategory(cat, id){
+  if (id && ALT[id] && ALT[id] !== cat) return ALT[id];
+  const c = CATS[cat] || {};
+  if (c.countsAsWage) return "EXCL_E";
+  return "WAGE_OTHER";
+}
+function pfNewAnnual(run){ return run.monthlyPFNew != null ? run.monthlyPFNew * 12 : (run.annualPFDelta || 0); }
+function gratNew(run){ return run.gratuityLiabilityNew != null ? run.gratuityLiabilityNew : (run.gratuityLiabilityDelta || 0); }
+function liability(run){ return pfNewAnnual(run) + gratNew(run); }
+function computeImpacts(){
+  const rs = E.RULESETS[0];
+  const emps = employees(1200);
+  const base = E.makeGlossary(canon, "proposed");
+  const baseRun = E.runPortfolio(emps, base, rs, canon);
+  const baseL = liability(baseRun);
+  const ids = canon.map(c => c.id); let i = 0;
+  const step = () => {
+    const t0 = performance.now();
+    while (i < ids.length && performance.now() - t0 < 40) {
+      const id = ids[i++]; const cat = base[id].category; const alt = (canonById[id].proposed || {}).alternative || altCategory(cat, id);
+      const g2 = Object.assign({}, base, {[id]: Object.assign({}, base[id], {category: alt})});
+      const r2 = E.runPortfolio(emps, g2, rs, canon);
+      S.impacts[id] = {alt, delta: liability(r2) - baseL, pf: pfNewAnnual(r2) - pfNewAnnual(baseRun), grat: gratNew(r2) - gratNew(baseRun)};
+    }
+    if (S.view === "glossary") updateImpactCells();
+    if (i < ids.length) setTimeout(step, 0);
+    else { S.impactsDone = true; if (S.view === "glossary") { if (reviewed() === 0) { S.order = null; } renderGlossary(); } }
+  };
+  setTimeout(step, 30);
+}
+function riskOf(c){
+  const conf = (S.glossary[c.id] || {}).confidence != null ? S.glossary[c.id].confidence : ((c.proposed || {}).confidence || 0);
+  const imp = S.impacts[c.id]; const max = Math.max(1, ...Object.values(S.impacts).map(x => Math.abs(x.delta)));
+  const iN = imp ? Math.abs(imp.delta) / max : 0;
+  const cat = (c.proposed || {}).category;
+  return (1 - conf) * 1.0 + iN * 0.4 + ((c.resolution || {}).needsReview ? 0.15 : 0) + (cat === "OUTSIDE" ? 0.2 : 0);
+}
+function riskBand(r){ return r >= 0.5 ? "high" : r >= 0.15 ? "med" : "low"; }
+function ordered(){
+  if (!S.order || (!S.impactsDone && reviewed() === 0)) S.order = canon.slice().sort((a, b) => riskOf(b) - riskOf(a)).map(c => c.id);
+  return S.order.map(id => canonById[id]);
+}
+function needsHuman(c){ const cat = (c.proposed || {}).category; return cat === "OUTSIDE" || (c.resolution || {}).needsReview || (c.proposed || {}).needsReview; }
+function bulkCandidates(){ return canon.filter(c => S.glossary[c.id].status === "proposed" && (S.glossary[c.id].confidence || 0) >= 0.9 && !needsHuman(c)); }
+function confColor(x){ return x >= 0.9 ? "var(--ok)" : x >= 0.75 ? "var(--warn)" : "var(--bad)"; }
+function impactCell(id){
+  const imp = S.impacts[id];
+  if (!imp) return `<span class="skel" aria-label="Estimating"></span><span>recomputing</span>`;
+  return `<b>${plus(imp.delta, inrS)}</b><span>if ${esc(imp.alt)}</span>`;
+}
+function updateImpactCells(){
+  for (const el of $$("[data-impact]")) el.innerHTML = impactCell(el.dataset.impact);
+  const n = Object.keys(S.impacts).length;
+  $("#gl-impact-state").innerHTML = S.impactsDone ? "₹ impact computed over " + num(1200) + " employees × 3 months" : `<span class="spin"></span> Estimating ₹ impact ${n} of ${canon.length}`;
+}
+function statusCell(g){
+  if (g.status === "approved") return `<span class="tag ok">✓ Approved</span>`;
+  if (g.status === "overridden") return `<span class="tag acc">Overridden</span>`;
+  return `<span class="tag neutral">Proposed</span>`;
+}
+function renderGlossary(){
+  const list = ordered();
+  if (S.sel >= list.length) S.sel = list.length - 1;
+  const r = reviewed(), t = total();
+  $("#gl-count").textContent = r + " of " + t + " approved";
+  $("#gl-fill").style.width = (r / t * 100) + "%";
+  const bc = bulkCandidates().length;
+  const bulk = $("#btn-bulk"); bulk.disabled = bc === 0; bulk.textContent = bc ? "Approve " + bc + " with confidence ≥ 0.90" : "Approve all ≥ 0.90";
+  $("#btn-to-results").textContent = allReviewed() ? "Run engine" : "Run engine (" + (t - r) + " left)";
+  $("#gl-list").innerHTML = list.map((c, i) => {
+    const g = S.glossary[c.id], p = c.proposed || {};
+    const cat = g.category, conf = g.confidence != null ? g.confidence : p.confidence;
+    const band = riskBand(riskOf(c));
+    const sel = i === S.sel;
+    return `<li class="gl-item${sel ? " sel" : ""}" data-i="${i}" role="option" aria-selected="${sel}">
+      <div class="gl-row" data-row="${i}">
+        <span class="stripe ${band}" title="${band} risk"></span>
+        <div class="cname"><b>${esc(c.name)}</b><div class="aliases">${(c.aliases || []).map(a => codeChip(a.system, a.code)).join("")}</div></div>
+        <div class="cat">${catChip(cat)}<span class="cl">${esc(catClause(cat) || catLabel(cat))}${g.status === "overridden" && p.category !== cat ? " · was " + esc(p.category) : ""}</span></div>
+        <div class="conf"><span>${conf != null ? (+conf).toFixed(2) : "—"}${needsHuman(c) ? ' · <span style="color:var(--warn)">human</span>' : ""}</span><span class="bar"><i style="width:${(conf || 0) * 100}%;background:${confColor(conf || 0)}"></i></span></div>
+        <div class="impact" data-impact="${esc(c.id)}">${impactCell(c.id)}</div>
+        <div class="status">${statusCell(g)}</div>
+      </div>
+      ${sel ? detailHTML(c, g) : ""}
+    </li>`;
+  }).join("");
+  updateImpactCells();
+  renderSteps();
+}
+function detailHTML(c, g){
+  const p = c.proposed || {};
+  const editing = S.editing === c.id;
+  const imp = S.impacts[c.id];
+  return `<div class="gl-detail">
+    <div class="ev">
+      <span class="eyebrow">Agent rationale</span>
+      <p class="rationale">${esc(p.rationale || "")}</p>
+      <span class="eyebrow" style="margin-top:4px">Evidence (${(p.evidence || []).length})</span>
+      ${(p.evidence || []).map(quoteBtn).join("")}
+    </div>
+    <div class="side">
+      ${imp ? `<div class="note"><div>If this were <b>${esc(imp.alt)}</b> (${esc(catLabel(imp.alt))}) instead of <b>${esc(p.category)}</b>, the engine gives annual employer PF ${plus(imp.pf, inrS)} and gratuity liability ${plus(imp.grat, inrS)} across ${num(1200)} employees.</div></div>` : ""}
+      ${g.status !== "proposed" ? `<div class="note ${g.status === "approved" ? "ok" : ""}"><span>${g.status === "approved" ? "Approved" : "Overridden to " + esc(g.category)} by ${esc(g.reviewer || REVIEWER)}${g.reason ? ": “" + esc(g.reason) + "”" : ""}</span></div>` : ""}
+      ${editing ? `<form class="ovr" id="ovr-form" novalidate>
+          <div class="field"><label for="ovr-cat">Correct category</label><select id="ovr-cat" class="input">${CAT_IDS.map(id => `<option value="${id}" ${id === (g.status === "proposed" ? ((S.impacts[c.id] || {}).alt || altCategory(p.category, c.id)) : g.category) ? "selected" : ""}>${id} · ${esc(catLabel(id))}</option>`).join("")}</select></div>
+          <div class="field"><label for="ovr-reason">Reason for the audit file (required)</label><textarea id="ovr-reason" class="input" placeholder="e.g. Paid every month under the appointment letter; not tied to any expense."></textarea><span class="err" id="ovr-err" hidden>Add a reason of at least 10 characters. Auditors read this.</span></div>
+          <div class="row"><button type="button" class="btn ghost sm" id="ovr-cancel">Cancel</button><button type="submit" class="btn primary sm">Save override</button></div>
+        </form>` : `<div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn primary" data-act="approve" data-id="${esc(c.id)}">${g.status === "approved" ? "Approved" : "Approve"} <kbd>a</kbd></button>
+          <button class="btn" data-act="override" data-id="${esc(c.id)}">Override <kbd>o</kbd></button>
+          ${g.status !== "proposed" ? `<button class="btn ghost" data-act="reset" data-id="${esc(c.id)}">Reopen</button>` : ""}
+        </div>`}
+      <div class="faint" style="font-size:12px">Resolution: ${esc((c.resolution || {}).method || "")} ${(c.resolution || {}).confidence != null ? "(" + (+c.resolution.confidence).toFixed(2) + ")" : ""}</div>
+    </div>
+  </div>`;
+}
+function bump(){ S.gv++; S.lastRun = S.lastRun; }
+function approve(id){
+  const g = S.glossary[id], p = canonById[id].proposed || {};
+  S.glossary[id] = Object.assign({}, g, {status: "approved", category: p.category, reviewer: REVIEWER, reason: null});
+  bump(); advance(); renderGlossary(); if (allReviewed()) toast("Glossary approved. The engine can run.");
+}
+function advance(){ const list = ordered(); const j = list.findIndex((c, i) => i > S.sel && S.glossary[c.id].status === "proposed"); const k = j >= 0 ? j : list.findIndex(c => S.glossary[c.id].status === "proposed"); S.editing = null; if (k >= 0) S.sel = k; scrollSel(); }
+function scrollSel(){ requestAnimationFrame(() => { const el = $(`.gl-item[data-i="${S.sel}"]`); if (el) el.scrollIntoView({block: "nearest"}); }); }
+function startOverride(id){ S.editing = id; renderGlossary(); requestAnimationFrame(() => { const s = $("#ovr-cat"); if (s) s.focus(); }); }
+$("#gl-list").addEventListener("click", e => {
+  const act = e.target.closest("[data-act]");
+  if (act) { e.stopPropagation(); const id = act.dataset.id;
+    if (act.dataset.act === "approve") approve(id);
+    else if (act.dataset.act === "override") startOverride(id);
+    else if (act.dataset.act === "reset") { S.glossary[id] = Object.assign({}, S.glossary[id], {status: "proposed", category: canonById[id].proposed.category, reason: null, reviewer: null}); bump(); renderGlossary(); }
+    return; }
+  if (e.target.closest("#ovr-cancel")) { S.editing = null; renderGlossary(); return; }
+  if (e.target.closest(".gl-detail")) return;
+  const row = e.target.closest("[data-row]"); if (row) { const i = +row.dataset.row; if (i !== S.sel) { S.sel = i; S.editing = null; renderGlossary(); } }
+});
+$("#gl-list").addEventListener("submit", e => {
+  if (e.target.id !== "ovr-form") return; e.preventDefault();
+  const reason = $("#ovr-reason").value.trim(); const cat = $("#ovr-cat").value; const id = S.editing;
+  if (reason.length < 10) { $("#ovr-err").hidden = false; $("#ovr-reason").focus(); return; }
+  S.glossary[id] = Object.assign({}, S.glossary[id], {status: "overridden", category: cat, reviewer: REVIEWER, reason});
+  bump(); toast("Override saved: " + canonById[id].name + " → " + cat); advance(); renderGlossary();
+});
+$("#gl-list").addEventListener("input", e => { if (e.target.id === "ovr-reason" && e.target.value.trim().length >= 10) $("#ovr-err").hidden = true; });
+$("#btn-bulk").onclick = () => {
+  const cs = bulkCandidates(); if (!cs.length) return;
+  for (const c of cs) S.glossary[c.id] = Object.assign({}, S.glossary[c.id], {status: "approved", category: c.proposed.category, reviewer: REVIEWER + " (bulk ≥ 0.90)", reason: null});
+  bump(); advance(); renderGlossary(); toast("Approved " + cs.length + " components. " + (total() - reviewed()) + " left for individual review.");
+};
+$("#btn-to-results").onclick = () => go("results");
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape") { if (!$("#drawer").hidden) { closeDrawer(); return; } if (S.editing) { S.editing = null; renderGlossary(); return; } }
+  if (S.view !== "glossary" || !$("#drawer").hidden) return;
+  if (e.metaKey || e.ctrlKey || e.altKey) return;
+  const tag = (e.target.tagName || "").toLowerCase(); if (tag === "input" || tag === "textarea" || tag === "select") return;
+  const list = ordered(); const c = list[S.sel];
+  if (e.key === "j" || e.key === "ArrowDown") { e.preventDefault(); S.sel = Math.min(list.length - 1, S.sel + 1); S.editing = null; renderGlossary(); scrollSel(); }
+  else if (e.key === "k" || e.key === "ArrowUp") { e.preventDefault(); S.sel = Math.max(0, S.sel - 1); S.editing = null; renderGlossary(); scrollSel(); }
+  else if (e.key === "a" && c) { e.preventDefault(); approve(c.id); }
+  else if (e.key === "o" && c) { e.preventDefault(); startOverride(c.id); }
+});
+
+/* ---------- 4 results ---------- */
+function breakdown(obj, title, key, single){
+  const rows = Object.entries(obj || {}).map(([k, v]) => Object.assign({name: k}, typeof v === "number" ? {gratuityLiabilityDelta: v} : v));
+  const gd = r => r.gratuityDelta != null ? r.gratuityDelta : (r.gratuityLiabilityDelta || 0);
+  const val = r => (r.monthlyPFDelta || 0) * 12 + gd(r);
+  rows.sort((a, b) => val(b) - val(a));
+  const max = Math.max(1, ...rows.map(r => Math.abs(val(r))));
+  return `<div class="card"><div class="card-h"><h2>${esc(title)}</h2><span class="faint" style="font-size:12px">${rows.length} ${key}</span></div><div class="tbl-wrap"><table>
+    <thead><tr><th>${esc(single)}</th><th class="r">Employees</th><th class="r">Add-back</th><th class="r">PF Δ / mo</th><th class="r">Gratuity Δ</th></tr></thead>
+    <tbody>${rows.map(r => `<tr><td><div style="display:grid;gap:5px"><span>${esc(r.name)}</span><span class="hbar" title="Share of annual PF + gratuity impact"><i style="width:${Math.abs(val(r)) / max * 100}%"></i></span></div></td><td class="r">${num(r.employees)}</td><td class="r">${num(r.withAddback)}</td><td class="r">${inrS(r.monthlyPFDelta)}</td><td class="r">${inrS(gd(r))}</td></tr>`).join("")}</tbody></table></div></div>`;
+}
+function empField(t, ...ks){ for (const k of ks) if (t[k] != null) return t[k]; return null; }
+function renderResults(){
+  const gate = $("#res-gate"), body = $("#res-body");
+  const left = total() - reviewed();
+  if (left > 0 && !S.draftOK) {
+    gate.innerHTML = `<div class="card gate"><span class="tag warn">Blocked</span><h2>${left} of ${total()} components still need review</h2>
+      <p class="muted" style="max-width:62ch">The engine computes only on an approved glossary, so every number here can be traced to a label a person signed off. You can preview with the agent's proposals, and the run is marked DRAFT everywhere, including the CSV.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-go="glossary">Review ${left} remaining</button><button class="btn" id="btn-draft">Run as draft with proposals</button></div></div>`;
+    body.innerHTML = ""; $("#res-draft").innerHTML = ""; $("#btn-csv").disabled = true;
+    $("#btn-draft").onclick = () => { S.draftOK = true; renderResults(); };
+    return;
+  }
+  gate.innerHTML = "";
+  body.innerHTML = `<div class="card"><div class="empty"><span class="spin"></span><span>Computing ${num(S.n)} employees × 3 months</span></div></div>`;
+  setTimeout(() => drawResults(), 16);
+}
+function drawResults(){
+  const R = getRun(); S.lastRun = R; renderSteps();
+  const run = R.run, rs = R.rs;
+  $("#res-draft").innerHTML = R.draft ? '<span class="pill draft" title="Computed on unreviewed proposals">DRAFT</span>' : "";
+  $("#res-sub").textContent = "Deterministic engine, " + rsShort(rs) + (rs.hypothetical ? " (hypothetical)" : "") + ". " + (R.draft ? "Computed on unreviewed proposals." : "Computed on the approved glossary.");
+  $("#btn-csv").disabled = false;
+  const comps = canon.length, emps = run.employees || S.n;
+  const manualMin = emps * 4, glossMin = comps * 1.5;
+  const top = (run.topImpacted || []).slice(0, 12);
+  $("#res-body").innerHTML = `
+    <div class="card controls">
+      <div class="slider"><div class="top-row"><label for="emp-n">Employees in estate</label><b id="n-lbl">${num(S.n)}</b></div>
+        <input type="range" id="emp-n" min="1200" max="10000" step="100" value="${S.n}" aria-describedby="perf"></div>
+      <div class="perf" id="perf"><span>Rows processed <b>${num(run.rowsProcessed)}</b></span><span>Engine time <b>${num(Math.round(R.ms))} ms</b></span></div>
+    </div>
+    <div class="grid4">
+      <div class="card kpi"><span class="eyebrow">Employees with add-back</span><span class="v">${num(run.withAddback)}</span><span class="sub">${pct(run.pctWithAddback)} of ${num(emps)} employees</span>${run.unresolvedLines ? `<span class="sub" style="color:var(--warn)">${num(run.unresolvedLines)} unmapped pay lines excluded</span>` : ""}</div>
+      <div class="card kpi"><span class="eyebrow">Employer PF Δ / month</span><span class="v">${plus(run.monthlyPFDelta, inrS)}</span><span class="full">${inr2(run.monthlyPFDelta)}</span>${run.monthlyPFOld != null ? `<span class="sub">${inrS(run.monthlyPFOld)} → ${inrS(run.monthlyPFNew)}</span>` : ""}</div>
+      <div class="card kpi"><span class="eyebrow">Employer PF Δ / year</span><span class="v">${plus(run.annualPFDelta, inrS)}</span><span class="full">${inr2(run.annualPFDelta)}</span></div>
+      <div class="card kpi"><span class="eyebrow">Gratuity liability increase</span><span class="v">${plus(run.gratuityLiabilityDelta, inrS)}</span><span class="full">${inr2(run.gratuityLiabilityDelta)}</span>${run.gratuityLiabilityDeltaEligible != null ? `<span class="sub">${inrS(run.gratuityLiabilityDeltaEligible)} for employees already eligible</span>` : ""}</div>
+    </div>
+    <div class="card tenx">
+      <span class="big" title="Review time, estimate">~${Math.max(1, Math.round(manualMin / glossMin))}× less review</span>
+      <p><b style="color:var(--fg);font-weight:500">${comps} glossary decisions reviewed instead of ${num(emps)} employee CTC annexures checked line by line.</b> Assumes 1.5 minutes per glossary decision (about ${Math.round(glossMin)} minutes) against 4 minutes per annexure in a spreadsheet (about ${num(Math.round(manualMin / 60))} hours). Re-running all ${num(run.rowsProcessed)} pay lines after a rule change takes ${num(Math.round(R.ms))} ms.</p>
+      <span class="tag neutral">estimate</span>
+    </div>
+    <div class="grid2 bd">${breakdown(run.byEntity, "By entity", "entities", "Entity")}${breakdown(run.byDept, "By department", "departments", "Department")}</div>
+    <div class="card"><div class="card-h"><h2>Most impacted employees</h2><span class="faint" style="font-size:12px">Click a row for the month-by-month computation trace</span></div>
+      <div class="tbl-wrap"><table><thead><tr><th>Employee</th><th>Entity · dept</th><th class="r">Code wage</th><th class="r">Add-back</th><th class="r">PF Δ / month</th><th class="r">Gratuity Δ</th><th>Eligible</th></tr></thead>
+      <tbody>${top.map(t => `<tr class="click" data-emp="${esc(t.id)}" tabindex="0"><td><div style="display:grid"><span>${esc(t.name || t.id)}</span><span class="mono faint">${esc(t.id)}</span></div></td><td>${esc(t.entity || "")}<div class="faint" style="font-size:12px">${esc(t.dept || "")}${t.grade ? " · " + esc(t.grade) : ""}</div></td>
+        <td class="r">${inr(empField(t, "codeWage", "latestCodeWage"))}</td><td class="r">${inr(empField(t, "addback", "latestAddback"))}</td><td class="r">${plus(empField(t, "pfDelta", "monthlyPFDelta") || 0, inr)}</td><td class="r">${plus(empField(t, "gratuityDelta", "gratuityLiabilityDelta") || 0, inr)}</td><td>${t.eligible == null ? "" : t.eligible ? '<span class="tag ok">Yes</span>' : '<span class="tag neutral">Not yet</span>'}</td></tr>`).join("")}</tbody></table></div></div>`;
+  const sl = $("#emp-n"); let deb;
+  sl.addEventListener("input", () => { $("#n-lbl").textContent = num(+sl.value); clearTimeout(deb); deb = setTimeout(() => { S.n = +sl.value; $("#perf").innerHTML = '<span class="spin"></span> <span>Computing ' + num(S.n) + " employees</span>"; setTimeout(drawResults, 16); }, 280); });
+}
+$("#res-body").addEventListener("click", e => { const r = e.target.closest("[data-emp]"); if (r) openTrace(r.dataset.emp); });
+$("#res-body").addEventListener("keydown", e => { if (e.key === "Enter") { const r = e.target.closest("[data-emp]"); if (r) openTrace(r.dataset.emp); } });
+function traceVal(s){ const v = s.value; if (typeof v !== "number") return esc(v == null ? "" : v); if (/service|years|months/i.test(s.step)) return num(v); return inr2(v); }
+function traceRows(tr){
+  return (tr || []).map(s => { const cl = /^classify:/.test(s.step);
+    return `<tr${cl ? ' class="cls"' : ""}><td class="mono">${esc(cl ? s.step.slice(9) : s.step)}</td><td class="f">${esc(s.formula || "")}</td><td class="r">${traceVal(s)}</td><td class="c">${esc(s.cite || "")}</td></tr>`; }).join("");
+}
+function openTrace(id, R){
+  R = R || S.lastRun || getRun();
+  const emp = employees(R.n).find(x => String(x.id) === String(id));
+  if (!emp) { toast("Employee " + id + " is not in this run."); return; }
+  let r; try { r = E.computeEmployee(emp, R.glossary, R.rs, canon, undefined, {trace: true}); } catch (err) { console.error(err); toast("The engine could not trace this employee."); return; }
+  const ms = r.months || [];
+  const monthSteps = new Set(((ms[ms.length - 1] || {}).trace || []).map(s => s.step));
+  const empSteps = (r.trace || []).filter(s => !monthSteps.has(s.step));
+  const months = ms.map((m, i) => {
+    const per = (emp.months[i] || {});
+    const latest = i === ms.length - 1;
+    return `<details class="card mon"${latest ? " open" : ""}><summary class="card-h"><h3>${esc(m.period || per.period || "Month " + (i + 1))}${latest ? ' <span class="tag acc">latest, used for gratuity</span>' : ""}</h3><span class="faint tnum" style="font-size:12px">R ${inr(m.R)} · cap ${inr(m.cap)} · add-back <b style="color:var(--fg);font-weight:500">${inr(m.addback)}</b> · code wage ${inr(m.codeWage)}</span></summary>
+      <div class="tbl-wrap"><table class="trace"><thead><tr><th>Step</th><th>Formula</th><th class="r">Value</th><th>Cites</th></tr></thead><tbody>${traceRows(m.trace)}</tbody></table></div></details>`;
+  }).join("");
+  openDrawer({
+    eyebrow: "Computation trace · " + (R.draft ? "DRAFT · " : "") + R.rs.id, title: (emp.name || emp.id) + " · " + emp.id,
+    sub: esc([emp.entity, emp.dept, emp.grade, "joined " + emp.doj, "PF " + emp.pfPolicy].filter(Boolean).join(" · ")),
+    html: `<div class="sumgrid">
+        <div><span class="eyebrow">PF / month</span><b>${inr2(r.pfOld)} → ${inr2(r.pfNew)}</b><span class="faint" style="font-size:12px">${plus(r.pfDelta, inr2)}</span></div>
+        <div><span class="eyebrow">Gratuity liability</span><b>${inrS(r.gratuityOld)} → ${inrS(r.gratuityNew)}</b><span class="faint" style="font-size:12px">${plus(r.gratuityDelta, inr2)}</span></div>
+        <div><span class="eyebrow">Service</span><b>${r.serviceYears} yrs</b><span class="faint" style="font-size:12px">${r.eligible ? "Eligible for gratuity" : "Not yet eligible (estimate shown)"}</span></div>
+      </div>
+      <div style="display:grid;gap:8px"><span class="eyebrow">Month by month</span>${months}</div>
+      ${empSteps.length ? `<div class="card"><div class="card-h"><h3>PF and gratuity from the latest month</h3><span class="faint" style="font-size:12px">as of ${esc(r.asOf || "")}</span></div><div class="tbl-wrap"><table class="trace"><thead><tr><th>Step</th><th>Formula</th><th class="r">Value</th><th>Cites</th></tr></thead><tbody>${traceRows(empSteps)}</tbody></table></div></div>` : ""}`
+  });
+}
+async function downloadCSV(){
+  const R = S.lastRun || getRun();
+  let csv; try { csv = E.toAuditCSV(R.run, {maxEmployees: 2000}); } catch (e) { console.error(e); toast("The CSV could not be built from this run."); return; }
+  const fn = "wagelens_audit_" + R.rs.id + (R.draft ? "_DRAFT" : "") + "_" + R.n + ".csv";
+  if (S.downloads) { try { await S.downloads.save({filename: fn, data: csv}); toast("Saved " + fn); return; } catch (e) { if (e && e.code === "declined") { toast("Download cancelled."); return; } } }
+  try { const url = URL.createObjectURL(new Blob([csv], {type: "text/csv"})); const a = document.createElement("a"); a.href = url; a.download = fn; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 2000); toast("Prepared " + fn + " (" + num(csv.split("\n").length - 1) + " rows)"); }
+  catch (e) { toast("This view blocks downloads. Open the page in claude.ai to save the CSV."); }
+}
+$("#btn-csv").onclick = downloadCSV;
+
+/* ---------- 5 rules & tests ---------- */
+function setTab(t){ S.rulesTab = t; $("#tab-rules").setAttribute("aria-selected", t === "rules"); $("#tab-tests").setAttribute("aria-selected", t === "tests"); $("#pane-rules").hidden = t !== "rules"; $("#pane-tests").hidden = t !== "tests"; if (t === "tests") renderTests(); else renderRuleStore(); }
+$("#tab-rules").onclick = () => setTab("rules"); $("#tab-tests").onclick = () => setTab("tests");
+function renderRules(){ setTab(S.rulesTab); }
+const RS_FIELDS = {threshold: ["Exclusion threshold", v => Math.round(v * 100) + "%"], pfCeiling: ["EPF wage ceiling", v => inr(v)], pfRate: ["Employer PF rate", v => Math.round(v * 100) + "%"], includeEmployerPFInRemuneration: ["Employer PF in remuneration", v => v ? "yes" : "no"], gratuityCap: ["Gratuity cap", v => inrS(v)], gratuityDays: ["Gratuity days", v => String(v)], gratuityDivisor: ["Gratuity divisor", v => String(v)]};
+function rsDiffFields(rs){ const first = E.RULESETS.find(r => !r.hypothetical) || E.RULESETS[0]; if (rs === first) return []; return Object.keys(RS_FIELDS).filter(k => rs[k] !== first[k]); }
+function rsChange(rs){ if (rs.changeNote || rs.note) return rs.changeNote || rs.note; const f = rsDiffFields(rs); const first = E.RULESETS.find(r => !r.hypothetical) || E.RULESETS[0];
+  if (!f.length) return "Baseline: Labour Codes in force. Exclusions (a) to (i) above 50% of remuneration are added back to wages.";
+  return f.map(k => RS_FIELDS[k][0] + " " + RS_FIELDS[k][1](first[k]) + " → " + RS_FIELDS[k][1](rs[k])).join("; ") + "."; }
+function rsSource(rs){ if (rs.source) return String(rs.source); const c = rs.citations || {}; const f = rsDiffFields(rs); const key = f.length ? ({threshold: "threshold", pfCeiling: "pfCeiling"}[f[0]] || f[0]) : "threshold"; return c[key] || ""; }
+function staleePair(){ const real = E.RULESETS.map((r, i) => ({r, i})).filter(x => !x.r.hypothetical).sort((a, b) => String(a.r.effectiveFrom).localeCompare(String(b.r.effectiveFrom))); return real.length >= 2 ? [real[real.length - 2], real[real.length - 1]] : null; }
+function diffBetween(fromRs, toRs, label){
+  const a = getRun({rs: fromRs}), b = getRun({rs: toRs});
+  let d; try { d = E.diffRuns(a.run, b.run); } catch (e) { console.error(e); d = null; }
+  S.diff = {from: fromRs, to: toRs, d, label, draft: a.draft || b.draft};
+}
+function diffHTML(){
+  const X = S.diff; if (!X) return `<div class="card"><div class="empty"><b>No comparison yet</b><span>Switch to another version or flip the employer-PF assumption to see exactly which employees move.</span></div></div>`;
+  const d = X.d || {}; const mag = r => Math.abs((r.deltaPF || 0) * 12 + (r.deltaGratuity || 0));
+  const rows = (d.rows || []).slice().sort((a, b) => mag(b) - mag(a)).slice(0, 12);
+  return `<div class="card"><div class="card-h"><h2>${esc(X.label || "Diff")}</h2><span style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span class="mono faint" style="overflow-wrap:anywhere">${esc(rsBaseId(X.from))}${X.from.includeEmployerPFInRemuneration ? "" : " (ER PF out)"} → ${esc(rsBaseId(X.to))}${X.to.includeEmployerPFInRemuneration ? "" : " (ER PF out)"}</span>${X.draft ? '<span class="pill draft">DRAFT</span>' : ""}</span></div>
+    <div class="card-b" style="display:grid;gap:12px">
+      ${rsBaseId(X.from) !== rsBaseId(X.to) ? `<div class="note"><span>${esc(rsChange(X.to.hypothetical ? X.to : X.to))} Employees on the capped PF policy pay employer PF on a higher base; gratuity has no ceiling change, so it moves only when the threshold or the wage definition moves.</span></div>` : ""}
+      <div class="diffsum"><div><span class="eyebrow">Employees changed</span><b>${num(d.changedEmployees)}</b><span class="faint" style="font-size:12px">of ${num(S.n)}</span></div>
+        <div><span class="eyebrow">Employer PF Δ / year</span><b>${plus(d.deltaAnnualPF != null ? d.deltaAnnualPF : (d.deltaPF || 0) * 12, inrS)}</b><span class="faint" style="font-size:12px">${plus(d.deltaPF || 0, inr)} per month</span></div>
+        <div><span class="eyebrow">Gratuity liability Δ</span><b>${plus(d.deltaGratuity || 0, inrS)}</b><span class="faint" style="font-size:12px">${inr2(d.deltaGratuity)}</span></div></div>
+      ${rows.length ? `<div class="tbl-wrap"><table><thead><tr><th>Employee</th><th>Entity · dept</th><th class="r">Code wage</th><th class="r">Add-back</th><th class="r">PF Δ / month</th><th class="r">Gratuity Δ</th></tr></thead><tbody>
+        ${rows.map(r => `<tr class="click" data-emp="${esc(r.id)}" tabindex="0"><td><span>${esc(r.name || r.id)}</span><div class="mono faint">${esc(r.id)}</div></td><td>${esc(r.entity || "")}<div class="faint" style="font-size:12px">${esc(r.dept || "")}</div></td>
+          <td class="r">${r.deltaCodeWage ? inr(r.codeWageA) + " → " + inr(r.codeWageB) : inr(r.codeWageB)}</td><td class="r">${r.addbackA !== r.addbackB ? inr(r.addbackA) + " → " + inr(r.addbackB) : inr(r.addbackB)}</td><td class="r">${plus(r.deltaPF || 0, inr2)}</td><td class="r">${plus(r.deltaGratuity || 0, inr)}</td></tr>`).join("")}</tbody></table></div>
+        <div class="faint" style="font-size:12px">Showing the ${rows.length} largest of ${num(d.totalRows != null ? d.totalRows : d.changedEmployees)} changed employees. Click a row for the trace under the active version.</div>` : `<div class="faint">No employee changes under this switch.</div>`}
+    </div></div>`;
+}
+function scrollDiff(){ requestAnimationFrame(() => { const d = $("#diff-slot"); if (d) d.scrollIntoView({block: "start", behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"}); }); }
+function renderRuleStore(){
+  const pair = staleePair(); const cur = baseRS();
+  const items = E.RULESETS.map((r, i) => ({r, i})).sort((a, b) => (a.r.hypothetical - b.r.hypothetical) || String(a.r.effectiveFrom).localeCompare(String(b.r.effectiveFrom)));
+  const erpf = activeRS().includeEmployerPFInRemuneration;
+  $("#pane-rules").innerHTML = `
+    ${pair ? `<div class="stale"><div style="display:grid;gap:4px"><span class="eyebrow" style="color:var(--warn)">Knowledge went stale</span><b style="font-weight:600">${esc(rsChange(pair[1].r).replace(/\.$/, ""))} from ${esc(pair[1].r.effectiveFrom)}</b><span class="muted" style="font-size:12.5px">Ruleset ${esc(pair[1].r.version || pair[1].r.id)} supersedes ${esc(pair[0].r.version || pair[0].r.id)}. A model or a spreadsheet built before ${esc(pair[1].r.effectiveFrom)} still uses the old figure. Here the new rule is a version in the store, and its effect is one diff.</span></div>
+      <button class="btn primary" id="btn-stale">Compare ${esc(pair[0].r.version || "old")} → ${esc(pair[1].r.version || "new")}</button></div>` : ""}
+    <div id="diff-slot">${diffHTML()}</div>
+    <div class="grid2" style="align-items:start">
+      <div class="card"><div class="card-h"><h2>Rule store</h2><span class="faint" style="font-size:12px">${E.RULESETS.length} versions</span></div><div class="card-b">
+        <ol class="timeline">${items.map(({r, i}) => `<li class="tl${i === S.rsIndex ? " active" : ""}${r.hypothetical ? " hyp" : ""}"><span class="date">${esc(r.effectiveFrom || "")}</span><span class="rail2"><i></i></span>
+          <div class="body"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:space-between"><div style="display:grid;gap:2px;min-width:0"><b style="font-weight:600">${esc(r.label || r.id)}</b><span class="mono faint">${esc(r.id)} · from ${esc(r.effectiveFrom || "")}</span></div>
+            ${r.hypothetical ? '<span class="tag warn">Hypothetical</span>' : '<span class="tag acc">In force</span>'}</div>
+            <div class="params"><span>Threshold <b>${Math.round(r.threshold * 100)}%</b></span><span>PF <b>${Math.round(r.pfRate * 100)}%</b> to ceiling <b>${inr(r.pfCeiling)}</b></span><span>Gratuity <b>${r.gratuityDays}/${r.gratuityDivisor}</b>, cap <b>${inrS(r.gratuityCap)}</b></span></div>
+            ${rsChange(r) ? `<div class="muted" style="font-size:12.5px">${esc(rsChange(r))}</div>` : ""}
+            ${rsSource(r) ? `<div class="faint" style="font-size:12px">Source: ${esc(rsSource(r))}</div>` : ""}
+            <div>${i === S.rsIndex ? '<span class="tag ok">Active</span>' : `<button class="btn sm" data-rs="${i}">Switch to this version</button>`}</div>
+          </div></li>`).join("")}</ol>
+      </div></div>
+      <div style="display:grid;gap:14px;min-width:0">
+        <div class="card"><div class="card-h"><h2>Assumption</h2></div><div class="card-b" style="display:grid;gap:8px">
+          <label class="switch" for="erpf"><input type="checkbox" id="erpf" ${erpf ? "checked" : ""}><span style="display:grid;gap:2px"><b style="font-weight:500">Count employer PF in total remuneration</b><span class="muted" style="font-size:12.5px">Clause (c) excludes employer PF from wages, but whether it sits inside the 50% test is read both ways. Default follows ${esc(cur.id)}. Test T08 shows the flip.</span></span></label>
+        </div></div>
+        <div class="card"><div class="card-h"><h2>How a rule change ships</h2></div><div class="card-b"><ol class="breaks" style="font-size:12.5px">
+          <li>A new version is added to the store with its effective date and source. Nothing in the engine changes.</li>
+          <li>WageLens re-runs every employee-month under both versions and shows who moves.</li>
+          <li>A reviewer signs the diff. The audit CSV records the ruleset id on every line.</li></ol></div></div>
+      </div>
+    </div>`;
+  const sb = $("#btn-stale"); if (sb) sb.onclick = () => { diffBetween(withErpf(pair[0].r, erpf), withErpf(pair[1].r, erpf), "Knowledge went stale: " + rsChange(pair[1].r).replace(/\.$/, "")); renderRuleStore(); scrollDiff(); };
+  $$("[data-rs]", $("#pane-rules")).forEach(b => b.onclick = () => { const before = activeRS(); S.rsIndex = +b.dataset.rs; S.erpf = null; const after = activeRS(); diffBetween(before, after, "Switched " + (before.version || before.id) + " → " + (after.version || after.id) + (after.hypothetical ? " (hypothetical)" : "")); renderHeader(); renderSteps(); renderRuleStore(); scrollDiff(); toast("Active ruleset: " + after.id); });
+  $("#erpf").onchange = e => { const before = activeRS(); S.erpf = e.target.checked; const after = activeRS(); diffBetween(before, after, "Employer PF " + (after.includeEmployerPFInRemuneration ? "counted in" : "left out of") + " total remuneration"); renderHeader(); renderRuleStore(); scrollDiff(); };
+  $("#pane-rules").onclick = e => { const r = e.target.closest("[data-emp]"); if (r) openTrace(r.dataset.emp, getRun()); };
+  $("#pane-rules").onkeydown = e => { if (e.key === "Enter") { const r = e.target.closest("[data-emp]"); if (r) openTrace(r.dataset.emp, getRun()); } };
+}
+const MISS_EXPLAIN = {
+  night_shift_allowance: "The agent read \"paid per night worked\" as a sum for the special conditions of the job, clause (e). The offer letter lists it among monthly earnings payable under the contract and no exclusion fits, so the reviewer labelled it wages. Confidence 0.62 sent it to the human queue, where it was caught.",
+  retention_bonus: "The agent matched the word \"bonus\" to clause (a). Clause (a) covers only a bonus payable under a law that is not part of contract pay, and the offer letter says this one forms part of monthly remuneration. Confidence 0.60 sent it to review, where it was caught."
+};
+function fmtX(x){ if (x == null) return ""; if (typeof x !== "object") return esc(typeof x === "number" ? (x % 1 ? x.toFixed(2) : num(x)) : x);
+  const ent = Object.entries(x); const more = ent.length > 5 ? ` <span class="faint">+${ent.length - 5} more</span>` : "";
+  return ent.slice(0, 5).map(([k, v]) => `<span style="white-space:nowrap">${esc(k)} <b style="font-weight:500">${typeof v === "number" ? esc(v % 1 ? v.toFixed(2) : String(v)) : esc(typeof v === "object" ? JSON.stringify(v) : v)}</b></span>`).join(" · ") + more; }
+function renderTests(){
+  if (!S.tests) { try { S.tests = E.runTests(D.testCases); } catch (e) { console.error(e); S.tests = []; } }
+  if (!S.evalr) { const t14 = S.tests.find(t => t.eval); if (t14) S.evalr = t14.eval; else { try { S.evalr = E.evalClassifier(canon, E.makeGlossary(canon, "proposed")); } catch (e) { console.error(e); S.evalr = null; } } }
+  const T = S.tests, pass = T.filter(t => t.pass).length, ev = S.evalr;
+  const misses = ev ? (ev.misses || []) : [];
+  $("#pane-tests").innerHTML = `
+    <div class="grid3">
+      <div class="card kpi"><span class="eyebrow">Engine tests</span><span class="v" style="color:${pass === T.length ? "var(--ok)" : "var(--bad)"}">${pass} / ${T.length} pass</span><span class="sub">Expected values computed by hand, not from the engine</span></div>
+      <div class="card kpi"><span class="eyebrow">Classifier vs human gold</span><span class="v">${ev ? (ev.correct + " / " + ev.total) : "—"}</span><span class="sub">${ev ? pct(ev.accuracy) + " agreement before review" : ""}</span></div>
+      <div class="card kpi"><span class="eyebrow">Misses kept on purpose</span><span class="v">${misses.length}</span><span class="sub">Shown below, not tuned away</span></div>
+    </div>
+    <div class="card"><div class="card-h"><h2>Engine tests</h2><button class="btn sm" id="btn-rerun">Run ${T.length} tests again</button></div>
+      <div class="tbl-wrap"><table><thead><tr><th>ID</th><th>Case</th><th>Expected</th><th>Actual</th><th>Result</th></tr></thead><tbody>
+      ${T.map(t => `<tr><td class="mono">${esc(t.id)}</td><td style="min-width:240px;max-width:420px">${esc(t.name)}${t.note ? `<div class="faint" style="font-size:12px">${esc(t.note)}</div>` : ""}</td><td style="font-size:12.5px;min-width:180px">${fmtX(t.expected)}</td><td style="font-size:12.5px;min-width:180px">${fmtX(t.actual)}</td><td>${t.pass ? '<span class="pass">✓ Pass</span>' : '<span class="fail">✕ Fail</span>'}</td></tr>`).join("")}
+      </tbody></table></div></div>
+    <div class="card"><div class="card-h"><h2>Where the classifier was wrong</h2><span class="faint" style="font-size:12px">Recorded proposals vs labels a labour-law reviewer approved</span></div>
+      <div class="card-b" style="display:grid;gap:10px">
+      ${misses.length ? misses.map(m => { const id = m.id || m.componentId; const c = canonById[id] || {}; return `<div style="display:grid;gap:6px;padding:10px 12px;border:1px solid var(--line);border-radius:6px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><b style="font-weight:500">${esc(c.name || m.name || id)}</b><span class="faint">agent proposed</span>${catChip(m.predicted || m.proposed || (c.proposed || {}).category)}${m.confidence != null ? `<span class="faint tnum">at ${(+m.confidence).toFixed(2)}</span>` : ""}<span class="faint">reviewer gold</span>${catChip(m.gold || (c.gold || {}).category)}</div>
+        <div class="muted" style="font-size:12.5px;max-width:80ch">${esc(MISS_EXPLAIN[id] || m.note || (c.gold || {}).note || "")}</div></div>`; }).join("") : '<div class="faint">No misses recorded.</div>'}
+      </div></div>
+    <div class="card"><div class="card-h"><h2>What breaks this</h2></div><div class="card-b">
+      <ol class="breaks">
+        <li><b>A component the dictionary describes badly.</b> The agent only sees names and descriptions. "SPL ALW 2" with no description gets low confidence and goes to a person, but a confident wrong description would pass.</li>
+        <li><b>State rules and leave encashment.</b> Out of scope. Only central rules are modelled; state notifications need their own ruleset versions.</li>
+        <li><b>Flexi baskets without declarations.</b> The label depends on what each employee declared. The glossary holds one default (wages) and needs per-employee declarations to do better.</li>
+        <li><b>Contested law.</b> Whether employer PF counts in total remuneration is still argued. The toggle shows the swing; it does not settle it. A CA signs the assumption.</li>
+        <li><b>Gratuity here is a liability estimate,</b> not an actuarial valuation. No discounting, attrition or salary escalation.</li>
+        <li><b>Quote verification proves the quote exists,</b> not that it supports the label. The night-shift miss carried a verified quote.</li>
+      </ol></div></div>`;
+  $("#btn-rerun").onclick = () => { S.tests = null; renderTests(); toast("Ran " + T.length + " tests"); };
+}
+
+/* ---------- boot ---------- */
+function boot(){
+  renderHeader(); renderConnect();
+  $("#live-sys").innerHTML = D.systems.map(s => `<option value="${esc(s.id)}">${esc(s.id)} · ${esc(s.entity)}</option>`).join("");
+  if (D.systems[1]) $("#live-sys").value = D.systems[1].id;
+  liveNote();
+  const h = location.hash.slice(1);
+  go(VIEWS.includes(h) ? h : "connect", false);
+  computeImpacts();
+  const cl = window.claude;
+  if (cl && typeof cl.use === "function") {
+    Promise.resolve(cl.use("sample")).then(s => { S.sample = s || null; liveNote(); }).catch(() => { S.sample = null; liveNote(); });
+    Promise.resolve(cl.use("downloads")).then(d => { S.downloads = d || null; }).catch(() => { S.downloads = null; });
+  } else { S.sample = null; liveNote(); }
+}
+boot();
+})();
+</script>

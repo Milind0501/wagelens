@@ -1,0 +1,523 @@
+{
+  "generatedBy": "tests/run_tests.mjs",
+  "disputedExpectations": [],
+  "notes": "No PLAN.md expected value was changed. All T01-T11, T13 expectations were re-derived by hand before implementation and match PLAN.md. T15 expectations come from the coordinator addendum (EPF ceiling Rs 25,000 from 17 Sep 2026; 0.12 x 16,500 = 1,980). Expected values in data.js testCases are literals; none are produced by the engine.",
+  "summary": {
+    "total": 15,
+    "passed": 15,
+    "failedDeterministic": 0,
+    "extraChecksFailed": 0
+  },
+  "results": [
+    {
+      "id": "T01",
+      "name": "Tresata's own CTC breakup, Flexible Allowance as wages (no FBP declaration)",
+      "kind": "month",
+      "pass": true,
+      "expected": {
+        "R": 146394,
+        "capped": 40500,
+        "addback": 0,
+        "codeWage": 105894
+      },
+      "actual": {
+        "R": 146394,
+        "capped": 40500,
+        "addback": 0,
+        "codeWage": 105894
+      },
+      "note": "Figures from the published Tresata IIT Delhi job notification: with Flexible Allowance counted as wages, add-back is nil and codeWage is far above basic.",
+      "proves": "Figures from the published Tresata IIT Delhi job notification: with Flexible Allowance counted as wages, add-back is nil and codeWage is far above basic."
+    },
+    {
+      "id": "T02",
+      "name": "Same CTC, Flexible fully declared as LTA/conveyance",
+      "kind": "month",
+      "pass": true,
+      "expected": {
+        "R": 146394,
+        "capped": 71394,
+        "cap": 73197,
+        "addback": 0,
+        "codeWage": 75000
+      },
+      "actual": {
+        "R": 146394,
+        "capped": 71394,
+        "cap": 73197,
+        "addback": 0,
+        "codeWage": 75000
+      },
+      "note": "Same CTC sits just under the 50% line (71,394 vs cap 73,197): a per-employee declaration moves codeWage from 105,894 to 75,000.",
+      "proves": "Same CTC sits just under the 50% line (71,394 vs cap 73,197): a per-employee declaration moves codeWage from 105,894 to 75,000."
+    },
+    {
+      "id": "T03",
+      "name": "Classic 30% basic structure",
+      "kind": "month",
+      "pass": true,
+      "expected": {
+        "R": 100000,
+        "capped": 70000,
+        "addback": 20000,
+        "codeWage": 50000
+      },
+      "actual": {
+        "R": 100000,
+        "capped": 70000,
+        "addback": 20000,
+        "codeWage": 50000
+      },
+      "note": "The textbook case: exclusions are 70% of remuneration, the excess over 50% is added back.",
+      "proves": "The textbook case: exclusions are 70% of remuneration, the excess over 50% is added back."
+    },
+    {
+      "id": "T04",
+      "name": "Special allowance counted as wages (Vivekananda reasoning)",
+      "kind": "month",
+      "pass": true,
+      "expected": {
+        "addback": 0,
+        "codeWage": 85000,
+        "oldPFBase": 30000
+      },
+      "actual": {
+        "addback": 0,
+        "codeWage": 85000,
+        "oldPFBase": 30000
+      },
+      "note": "One classification (Special Allowance = WAGE_OTHER) removes the add-back; old PF base stays basic only.",
+      "proves": "One classification (Special Allowance = WAGE_OTHER) removes the add-back; old PF base stays basic only."
+    },
+    {
+      "id": "T05",
+      "name": "Overtime spike month",
+      "kind": "month",
+      "pass": true,
+      "expected": {
+        "R": 55000,
+        "cap": 27500,
+        "addback": 7500,
+        "codeWage": 27500
+      },
+      "actual": {
+        "R": 55000,
+        "cap": 27500,
+        "addback": 7500,
+        "codeWage": 27500
+      },
+      "note": "Overtime sits inside the 50% group, so a spike month triggers an add-back even for a modest structure.",
+      "proves": "Overtime sits inside the 50% group, so a spike month triggers an add-back even for a modest structure."
+    },
+    {
+      "id": "T06",
+      "name": "Sales commission heavy",
+      "kind": "month",
+      "pass": true,
+      "expected": {
+        "addback": 25000,
+        "codeWage": 50000
+      },
+      "actual": {
+        "addback": 25000,
+        "codeWage": 50000
+      },
+      "note": "Commission is inside the group; heavy variable pay produces a large add-back.",
+      "proves": "Commission is inside the group; heavy variable pay produces a large add-back."
+    },
+    {
+      "id": "T07",
+      "name": "PF ceiling crossed (policy capped)",
+      "kind": "month",
+      "pass": true,
+      "expected": {
+        "addback": 4500,
+        "codeWage": 16500,
+        "pfOld": 1440,
+        "pfNew": 1800
+      },
+      "actual": {
+        "addback": 4500,
+        "codeWage": 16500,
+        "pfOld": 1440,
+        "pfNew": 1800
+      },
+      "note": "Employer PF is capped at Rs 15,000 of wages: Rs 12,000 basic gives 1,440; Rs 16,500 Code wage hits the ceiling and gives 1,800.",
+      "proves": "Employer PF is capped at Rs 15,000 of wages: Rs 12,000 basic gives 1,440; Rs 16,500 Code wage hits the ceiling and gives 1,800."
+    },
+    {
+      "id": "T08",
+      "name": "Employer-PF-in-remuneration assumption flips the answer",
+      "kind": "month",
+      "pass": true,
+      "expected": {
+        "include.addback": 900,
+        "include.codeWage": 40900,
+        "exclude.addback": 0,
+        "exclude.codeWage": 40000
+      },
+      "actual": {
+        "include.addback": 900,
+        "include.codeWage": 40900,
+        "exclude.addback": 0,
+        "exclude.codeWage": 40000
+      },
+      "note": "Whether employer PF counts in \"all remuneration\" changes add-back from 900 to 0: an explicit, toggleable ruleset assumption.",
+      "proves": "Whether employer PF counts in \"all remuneration\" changes add-back from 900 to 0: an explicit, toggleable ruleset assumption."
+    },
+    {
+      "id": "T09",
+      "name": "Statutory bonus month (PoB Act)",
+      "kind": "month",
+      "pass": true,
+      "expected": {
+        "R": 32500,
+        "addback": 1250,
+        "codeWage": 16250
+      },
+      "actual": {
+        "R": 32500,
+        "addback": 1250,
+        "codeWage": 16250
+      },
+      "note": "A bonus paid under the PoB Act is clause (a) and still counts toward the 50% group, so a bonus month can trigger a small add-back.",
+      "proves": "A bonus paid under the PoB Act is clause (a) and still counts toward the 50% group, so a bonus month can trigger a small add-back."
+    },
+    {
+      "id": "T10",
+      "name": "Exit with gratuity payout (outside cap) and gratuity liability",
+      "kind": "month",
+      "pass": true,
+      "expected": {
+        "R": 100000,
+        "addback": 0,
+        "codeWage": 75000,
+        "serviceYears": 8,
+        "gratuityNew": 346153.85,
+        "gratuityOld": 230769.23
+      },
+      "actual": {
+        "R": 100000,
+        "addback": 0,
+        "codeWage": 75000,
+        "serviceYears": 8,
+        "gratuityNew": 346153.8461538461,
+        "gratuityOld": 230769.23076923075
+      },
+      "note": "Gratuity payout (200,000) is outside R and outside the cap; service 7y 8m rounds to 8 years; liability rises from 230,769.23 to 346,153.85.",
+      "proves": "Gratuity payout (200,000) is outside R and outside the cap; service 7y 8m rounds to 8 years; liability rises from 230,769.23 to 346,153.85."
+    },
+    {
+      "id": "T11",
+      "name": "Reimbursement against bills is outside remuneration",
+      "kind": "month",
+      "pass": true,
+      "expected": {
+        "R": 45000,
+        "addback": 0,
+        "codeWage": 30000
+      },
+      "actual": {
+        "R": 45000,
+        "addback": 0,
+        "codeWage": 30000
+      },
+      "note": "OUTSIDE is not in R. If misclassified as WAGE_OTHER codeWage would be 38,000; the test asserts 30,000.",
+      "proves": "OUTSIDE is not in R. If misclassified as WAGE_OTHER codeWage would be 38,000; the test asserts 30,000."
+    },
+    {
+      "id": "T12",
+      "name": "Cross-system entity resolution",
+      "kind": "resolve",
+      "pass": true,
+      "expected": {
+        "SAPHR:1020": "special_allowance",
+        "GREYCSV:SPECIAL_ALLOW": "special_allowance",
+        "SAPHR:1001": "basic",
+        "GREYCSV:BASIC_SALARY": "basic",
+        "SAPHR:1060": "overtime",
+        "GREYCSV:OT Pay": "overtime",
+        "SAPHR:1110": "night_shift_allowance",
+        "GREYCSV:Night Shift Allow": "night_shift_allowance",
+        "SAPHR:ZZ99": null,
+        "GREYCSV:SPECIAL_ALLOW ": null,
+        "SAPHR:SPECIAL_ALLOW": null,
+        "ZZ99 excluded from R and flagged": true
+      },
+      "actual": {
+        "SAPHR:1020": "special_allowance",
+        "GREYCSV:SPECIAL_ALLOW": "special_allowance",
+        "SAPHR:1001": "basic",
+        "GREYCSV:BASIC_SALARY": "basic",
+        "SAPHR:1060": "overtime",
+        "GREYCSV:OT Pay": "overtime",
+        "SAPHR:1110": "night_shift_allowance",
+        "GREYCSV:Night Shift Allow": "night_shift_allowance",
+        "SAPHR:ZZ99": null,
+        "GREYCSV:SPECIAL_ALLOW ": null,
+        "SAPHR:SPECIAL_ALLOW": null,
+        "ZZ99 excluded from R and flagged": true
+      },
+      "note": "Different codes in different systems resolve to one canonical id; look-alikes that must not merge stay apart; unknown codes return null and are excluded from R with a warning.",
+      "proves": "Different codes in different systems resolve to one canonical id; look-alikes that must not merge stay apart; unknown codes return null and are excluded from R with a warning."
+    },
+    {
+      "id": "T13",
+      "name": "What-if threshold 40% (hypothetical notification) on T03 inputs",
+      "kind": "month",
+      "pass": true,
+      "expected": {
+        "cap": 40000,
+        "addback": 30000,
+        "codeWage": 60000,
+        "delta.codeWage": 10000
+      },
+      "actual": {
+        "cap": 40000,
+        "addback": 30000,
+        "codeWage": 60000,
+        "delta.codeWage": 10000
+      },
+      "note": "Rule change is a version swap: the same inputs under a 40% threshold give cap 40,000, add-back 30,000 and codeWage 60,000 (+10,000 vs v1).",
+      "proves": "Rule change is a version swap: the same inputs under a 40% threshold give cap 40,000, add-back 30,000 and codeWage 60,000 (+10,000 vs v1)."
+    },
+    {
+      "id": "T14",
+      "name": "Classifier eval vs human gold labels (honest failure report)",
+      "kind": "eval",
+      "pass": true,
+      "expected": {
+        "accuracy": 0.9,
+        "misses": [
+          "night_shift_allowance",
+          "retention_bonus"
+        ]
+      },
+      "actual": {
+        "accuracy": 0.9,
+        "correct": 18,
+        "total": 20,
+        "misses": [
+          "night_shift_allowance",
+          "retention_bonus"
+        ],
+        "allProposalsValid": true
+      },
+      "note": "accuracy 90.0% (18/20); misses: Night Shift Allowance proposed EXCL_E vs gold WAGE_OTHER; Retention Bonus (monthly, contractual) proposed EXCL_A vs gold WAGE_OTHER. Misses are kept, not tuned away.",
+      "proves": "Recorded proposals scored against human gold labels. Two deliberate misses are kept: Night Shift Allowance (proposed EXCL_E, gold WAGE_OTHER) and Retention Bonus (proposed EXCL_A, gold WAGE_OTHER). Also asserts every proposal passes validateProposal.",
+      "eval": {
+        "total": 20,
+        "correct": 18,
+        "accuracy": 0.9,
+        "confusion": [
+          {
+            "gold": "WAGE_CORE",
+            "predicted": "WAGE_CORE",
+            "count": 2
+          },
+          {
+            "gold": "WAGE_OTHER",
+            "predicted": "WAGE_OTHER",
+            "count": 2
+          },
+          {
+            "gold": "EXCL_F",
+            "predicted": "EXCL_F",
+            "count": 1
+          },
+          {
+            "gold": "EXCL_D",
+            "predicted": "EXCL_D",
+            "count": 2
+          },
+          {
+            "gold": "EXCL_H",
+            "predicted": "EXCL_H",
+            "count": 1
+          },
+          {
+            "gold": "EXCL_I",
+            "predicted": "EXCL_I",
+            "count": 1
+          },
+          {
+            "gold": "EXCL_A",
+            "predicted": "EXCL_A",
+            "count": 1
+          },
+          {
+            "gold": "EXCL_C",
+            "predicted": "EXCL_C",
+            "count": 1
+          },
+          {
+            "gold": "EXCL_B",
+            "predicted": "EXCL_B",
+            "count": 1
+          },
+          {
+            "gold": "EXCL_E",
+            "predicted": "EXCL_E",
+            "count": 1
+          },
+          {
+            "gold": "WAGE_OTHER",
+            "predicted": "EXCL_E",
+            "count": 1
+          },
+          {
+            "gold": "WAGE_OTHER",
+            "predicted": "EXCL_A",
+            "count": 1
+          },
+          {
+            "gold": "OUTSIDE",
+            "predicted": "OUTSIDE",
+            "count": 2
+          },
+          {
+            "gold": "EXCL_J",
+            "predicted": "EXCL_J",
+            "count": 1
+          },
+          {
+            "gold": "EXCL_K",
+            "predicted": "EXCL_K",
+            "count": 1
+          },
+          {
+            "gold": "EXCL_G",
+            "predicted": "EXCL_G",
+            "count": 1
+          }
+        ],
+        "misses": [
+          {
+            "id": "night_shift_allowance",
+            "name": "Night Shift Allowance",
+            "gold": "WAGE_OTHER",
+            "predicted": "EXCL_E",
+            "confidence": 0.62,
+            "rationale": "Paid only for nights actually worked, to compensate for the special conditions of night duty. That reads like a sum entailed by the nature of the employment, clause (e). Confidence moderate because the offer letter lists it among monthly earnings, which points the other way.",
+            "note": "DELIBERATE MISS. Night allowance is contractual monthly remuneration (OFFER_TPL, Annexure A, C), not reimbursement of an expense; no exclusion (a)-(k) fits. Contestable under the \"extra work\" limb of Vivekananda Vidyamandir, but s.2(y) wages is wider than PF basic wages."
+          },
+          {
+            "id": "retention_bonus",
+            "name": "Retention Bonus (monthly, contractual)",
+            "gold": "WAGE_OTHER",
+            "predicted": "EXCL_A",
+            "confidence": 0.6,
+            "rationale": "Labelled \"bonus\" and paid under a separate retention agreement, so it looks like a bonus excluded by clause (a). Confidence is moderate: clause (a) only covers a bonus payable under law that is not part of contract remuneration, and this one is contractual.",
+            "note": "DELIBERATE MISS. Clause (a) needs a bonus payable under a law AND not part of contract remuneration. OFFER_TPL says the retention bonus \"forms part of the monthly remuneration payable under the terms of this letter\". The label \"bonus\" misled the classifier."
+          }
+        ]
+      }
+    },
+    {
+      "id": "T15",
+      "name": "EPF ceiling change (v2): same inputs as T07 under the Sep 2026 ruleset",
+      "kind": "month",
+      "pass": true,
+      "expected": {
+        "addback": 4500,
+        "codeWage": 16500,
+        "pfOld": 1440,
+        "pfNew": 1980
+      },
+      "actual": {
+        "addback": 4500,
+        "codeWage": 16500,
+        "pfOld": 1440,
+        "pfNew": 1980
+      },
+      "note": "Knowledge goes stale: with the EPF ceiling at Rs 25,000 (v2, from 17 Sep 2026) the Rs 16,500 Code wage is no longer capped, so employer PF is 12% x 16,500 = 1,980 instead of 1,800. A ruleset version swap, no code change.",
+      "proves": "Knowledge goes stale: with the EPF ceiling at Rs 25,000 (v2, from 17 Sep 2026) the Rs 16,500 Code wage is no longer capped, so employer PF is 12% x 16,500 = 1,980 instead of 1,800. A ruleset version swap, no code change."
+    }
+  ],
+  "extraChecks": [
+    {
+      "name": "all proposal quotes are verbatim substrings",
+      "pass": true,
+      "detail": "41 quotes across 20 proposals"
+    },
+    {
+      "name": "recorded failed quote is genuinely not in its source",
+      "pass": true,
+      "detail": "Allowances paid to all employees form part of basic wages"
+    },
+    {
+      "name": "validateProposal rejects an invented category",
+      "pass": true,
+      "detail": "EXCL_L"
+    },
+    {
+      "name": "LAW_2Y begins and ends with the s.2(y) wording",
+      "pass": true,
+      "detail": "1989 chars"
+    },
+    {
+      "name": "generateEmployees deterministic per seed",
+      "pass": true,
+      "detail": "seed 7 twice identical; seed 8 differs"
+    },
+    {
+      "name": "data.js contains no Math.random",
+      "pass": true,
+      "detail": ""
+    },
+    {
+      "name": "generated estate: zero unresolved lines under gold glossary",
+      "pass": true,
+      "detail": "21765 lines resolved"
+    },
+    {
+      "name": "generated estate covers both systems",
+      "pass": true,
+      "detail": "[\"Northwind Bengaluru\",\"Northwind Pune\"]"
+    },
+    {
+      "name": "every one of the 33 raw codes appears in the default estate",
+      "pass": true,
+      "detail": "all present"
+    },
+    {
+      "name": "proposed glossary run is flagged draft with 20 unreviewed components",
+      "pass": true,
+      "detail": "20 unreviewed"
+    },
+    {
+      "name": "10,000 employees x 3 months in under 1000 ms",
+      "pass": true,
+      "detail": "81 ms, 182,069 lines"
+    },
+    {
+      "name": "40% what-if increases add-back employees and PF",
+      "pass": true,
+      "detail": "withAddback 248 -> 321"
+    },
+    {
+      "name": "v2 EPF ceiling (25,000) raises employer PF vs v1",
+      "pass": true,
+      "detail": "monthly PF +817298"
+    },
+    {
+      "name": "audit CSV header and rows",
+      "pass": true,
+      "detail": "914 lines for 50 employees"
+    }
+  ],
+  "portfolio": {
+    "employees": 1200,
+    "rows": 21765,
+    "withAddback": 248,
+    "pctWithAddback": 20.666666666666668,
+    "monthlyPFDelta": 1838145.420000001,
+    "annualPFDelta": 22057745.040000014,
+    "gratuityLiabilityDelta": 135934311.9230769,
+    "scale10k": {
+      "employees": 10000,
+      "rows": 182069,
+      "ms": 81.28610799999996
+    }
+  }
+}

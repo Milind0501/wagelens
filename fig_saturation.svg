@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="248.4pt" height="144pt" viewBox="0 0 248.4 144" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-11-02T17:09:35.755660</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.11.2, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 144 
+L 248.4 144 
+L 248.4 0 
+L 0 0 
+z
+" style="fill: #ffffff"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 86.351094 141.78 
+L 246.18 141.78 
+L 246.18 16.62 
+L 86.351094 16.62 
+z
+" style="fill: #ffffff"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 86.351094 136.090909 
+L 86.351094 136.090909 
+L 86.351094 127.907066 
+L 86.351094 127.907066 
+z
+" clip-path="url(#pb077ae3ca6)" style="fill: #0d6b62"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 86.351094 122.891162 
+L 99.670169 122.891162 
+L 99.670169 114.707319 
+L 86.351094 114.707319 
+z
+" clip-path="url(#pb077ae3ca6)" style="fill: #b9c1c6"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 86.351094 109.691415 
+L 101.446046 109.691415 
+L 101.446046 101.507572 
+L 86.351094 101.507572 
+z
+" clip-path="url(#pb077ae3ca6)" style="fill: #b9c1c6"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 86.351094 96.491668 
+L 101.446046 96.491668 
+L 101.446046 88.307825 
+L 86.351094 88.307825 
+z
+" clip-path="url(#pb077ae3ca6)" style="fill: #b9c1c6"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 86.351094 83.291922 
+L 104.109861 83.291922 
+L 104.109861 75.108078 
+L 86.351094 75.108078 
+z
+" clip-path="url(#pb077ae3ca6)" style="fill: #b9c1c6"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 86.351094 70.092175 
+L 104.109861 70.092175 
+L 104.109861 61.908332 
+L 86.351094 61.908332 
+z
+" clip-path="url(#pb077ae3ca6)" style="fill: #b9c1c6"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 86.351094 56.892428 
+L 114.765122 56.892428 
+L 114.765122 48.708585 
+L 86.351094 48.708585 
+z
+" clip-path="url(#pb077ae3ca6)" style="fill: #b9c1c6"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 86.351094 43.692681 
+L 117.428937 43.692681 
+L 117.428937 35.508838 
+L 86.351094 35.508838 
+z
+" clip-path="url(#pb077ae3ca6)" style="fill: #b9c1c6"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 86.351094 30.492934 
+L 219.541849 30.492934 
+L 219.541849 22.309091 
+L 86.351094 22.309091 
+z
+" clip-path="url(#pb077ae3ca6)" style="fill: #b9c1c6"/>
+   </g>
+   <g id="matplotlib.axis_1"/>
+   <g id="matplotlib.axis_2">
+    <g id="ytick_1">
+     <g id="line2d_1"/>
+     <g id="text_1">
+      <text style="font-size: 7.4px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: end; fill: #15191c" x="82.851094" y="134.692689" transform="rotate(-0 82.851094 134.692689)">Labour Code wage audit</text>
+     </g>
+    </g>
+    <g id="ytick_2">
+     <g id="line2d_2"/>
+     <g id="text_2">
+      <text style="font-size: 7.4px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: end; fill: #15191c" x="82.851094" y="121.492942" transform="rotate(-0 82.851094 121.492942)">KYC / AML (Bretton)</text>
+     </g>
+    </g>
+    <g id="ytick_3">
+     <g id="line2d_3"/>
+     <g id="text_3">
+      <text style="font-size: 7.4px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: end; fill: #15191c" x="82.851094" y="108.293195" transform="rotate(-0 82.851094 108.293195)">Reconciliation (Simetrik)</text>
+     </g>
+    </g>
+    <g id="ytick_4">
+     <g id="line2d_4"/>
+     <g id="text_4">
+      <text style="font-size: 7.4px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: end; fill: #15191c" x="82.851094" y="95.093448" transform="rotate(-0 82.851094 95.093448)">Audit (Modus)</text>
+     </g>
+    </g>
+    <g id="ytick_5">
+     <g id="line2d_5"/>
+     <g id="text_5">
+      <text style="font-size: 7.4px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: end; fill: #15191c" x="82.851094" y="81.893701" transform="rotate(-0 82.851094 81.893701)">AI ERP / close (Rillet)</text>
+     </g>
+    </g>
+    <g id="ytick_6">
+     <g id="line2d_6"/>
+     <g id="text_6">
+      <text style="font-size: 7.4px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: end; fill: #15191c" x="82.851094" y="68.693954" transform="rotate(-0 82.851094 68.693954)">Tax-return prep (Basis)</text>
+     </g>
+    </g>
+    <g id="ytick_7">
+     <g id="line2d_7"/>
+     <g id="text_7">
+      <text style="font-size: 7.4px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: end; fill: #15191c" x="82.851094" y="55.494207" transform="rotate(-0 82.851094 55.494207)">AP controls (Xelix)</text>
+     </g>
+    </g>
+    <g id="ytick_8">
+     <g id="line2d_8"/>
+     <g id="text_8">
+      <text style="font-size: 7.4px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: end; fill: #15191c" x="82.851094" y="42.294461" transform="rotate(-0 82.851094 42.294461)">Fund tax data (K1x)</text>
+     </g>
+    </g>
+    <g id="ytick_9">
+     <g id="line2d_9"/>
+     <g id="text_9">
+      <text style="font-size: 7.4px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: end; fill: #15191c" x="82.851094" y="29.094714" transform="rotate(-0 82.851094 29.094714)">AP / spend (Ramp)</text>
+     </g>
+    </g>
+   </g>
+   <g id="text_10">
+    <text style="font-weight: 700; font-size: 7px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #0d6b62" x="88.748527" y="133.810511" transform="rotate(-0 88.748527 133.810511)">no funded AI tool found</text>
+   </g>
+   <g id="text_11">
+    <text style="font-size: 7px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #5b6469" x="102.067603" y="120.653762" transform="rotate(-0 102.067603 120.653762)">$75M</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 7px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #5b6469" x="103.84348" y="107.454015" transform="rotate(-0 103.84348 107.454015)">$85M</text>
+   </g>
+   <g id="text_13">
+    <text style="font-size: 7px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #5b6469" x="103.84348" y="94.254268" transform="rotate(-0 103.84348 94.254268)">$85M</text>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 7px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #5b6469" x="106.507295" y="81.054521" transform="rotate(-0 106.507295 81.054521)">$100M</text>
+   </g>
+   <g id="text_15">
+    <text style="font-size: 7px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #5b6469" x="106.507295" y="67.854775" transform="rotate(-0 106.507295 67.854775)">$100M</text>
+   </g>
+   <g id="text_16">
+    <text style="font-size: 7px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #5b6469" x="117.162555" y="54.655028" transform="rotate(-0 117.162555 54.655028)">$160M</text>
+   </g>
+   <g id="text_17">
+    <text style="font-size: 7px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #5b6469" x="119.82637" y="41.455281" transform="rotate(-0 119.82637 41.455281)">$175M</text>
+   </g>
+   <g id="text_18">
+    <text style="font-size: 7px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #5b6469" x="221.939283" y="28.255534" transform="rotate(-0 221.939283 28.255534)">$750M</text>
+   </g>
+  </g>
+  <g id="text_19">
+   <text style="font-weight: 700; font-size: 7.8px; font-family: 'Helvetica', 'Arial', 'Liberation Sans', 'DejaVu Sans', sans-serif; text-anchor: start; fill: #15191c" x="2.484" y="9.998613" transform="rotate(-0 2.484 9.998613)">Largest 2025–26 round in each crowded category</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pb077ae3ca6">
+   <rect x="86.351094" y="16.62" width="159.828906" height="125.16"/>
+  </clipPath>
+ </defs>
+</svg>
