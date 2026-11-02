@@ -10,7 +10,7 @@
 
 ## How to run
 
-- **Live demo (GitHub Pages):** `https://<your-username>.github.io/wagelens/` — static site, nothing to install. Five screens: Connect estate → Agent run → Review glossary → Results → Rules & tests.
+- **Live demo (GitHub Pages):** `https://milind0501.github.io/wagelens/` — static site, nothing to install. Five screens: Connect estate → Agent run → Review glossary → Results → Rules & tests.
 - **Locally:** clone and run `python3 -m http.server` in the repo folder, then open `http://localhost:8000` (or just open `index.html`).
 - **Live AI:** on the *Agent run* screen, "Classify a new pay component live" sends one component's name and description plus the six source documents (no employee rows) to an LLM, then runs the same guardrails (closed category set, every quote must be an exact substring of its source). Providers: **OpenRouter** with your own key (default model `meta-llama/llama-3.3-70b-instruct:free`; the key stays in the tab's memory only), or **Claude** when the page is opened as a claude.ai artifact. Without a key it shows the recorded run.
 - **Brief:** `docs/WageLens_brief.pdf` (problem, architecture, risks, results, appendix).
